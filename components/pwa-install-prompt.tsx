@@ -40,9 +40,9 @@ export function PWAInstallPrompt() {
 
       // 显示安装成功提示
       if ("serviceWorker" in navigator && "Notification" in window) {
-        new Notification("JINLAN 企业管理系统", {
+        new Notification("ZUOYOU 企业管理系统", {
           body: "应用已成功安装到您的设备！",
-          icon: "/images/jinlan-logo-new.png",
+          icon: "/images/zuoyou-logo.png",
         })
       }
     }
@@ -106,7 +106,9 @@ export function PWAInstallPrompt() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <img src="/images/jinlan-logo-new.png" alt="锦澜家居" className="w-8 h-8 object-contain" />
+              <div className="w-8 h-8 bg-gradient-to-r from-sky-400 to-blue-500 rounded-lg flex items-center justify-center">
+                <img src="/images/zuoyou-logo.png" alt="ZUOYOU" className="w-5 h-5 object-contain" />
+              </div>
               <div>
                 <CardTitle className="text-sm font-semibold text-slate-800">安装应用</CardTitle>
                 <CardDescription className="text-xs text-slate-600">获得更好的使用体验</CardDescription>

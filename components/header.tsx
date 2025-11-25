@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { Bell, Search, Settings, User, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,192 +11,107 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import {
-  Search,
-  Bell,
-  Settings,
-  User,
-  LogOut,
-  Moon,
-  Sun,
-  Globe,
-  HelpCircle,
-  MessageSquare,
-  Calendar,
-  Clock,
-} from "lucide-react"
-import { useTheme } from "next-themes"
+import { useSidebarContext } from "@/components/layout/adaptive-sidebar"
 
-export function Header() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { theme, setTheme } = useTheme()
-  const [notifications] = useState([
-    { id: 1, title: "新客户注册", message: "张三刚刚注册了账户", time: "2分钟前", unread: true },
-    { id: 2, title: "任务提醒", message: "项目A的截止日期临近", time: "10分钟前", unread: true },
-    { id: 3, title: "系统更新", message: "系统将在今晚进行维护", time: "1小时前", unread: false },
-  ])
+interface HeaderProps {
+  activeModule?: string
+  className?: string
+  onMenuClick?: () => void
+}
 
-  const unreadCount = notifications.filter((n) => n.unread).length
+export function Header({ activeModule = "dashboard", className = "" }: HeaderProps) {
+  const { toggle, isMobile } = useSidebarContext()
 
-  const getCurrentTime = () => {
-    const now = new Date()
-    return now.toLocaleString("zh-CN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      weekday: "long",
-    })
+  const moduleNames: Record<string, string> = {
+    dashboard: "服务中心",
+    analytics: "数据分析",
+    reports: "报表中心",
+    kpi: "指标监控",
+    customers: "客户管理",
+    tasks: "任务管理",
+    approval: "审批管理",
+    okr: "目标管理",
+    finance: "财务管理",
+    budget: "预算管理",
+    invoices: "发票管理",
+    payments: "支付管理",
+    chat: "即时聊天",
+    meetings: "视频会议",
+    documents: "文档协作",
+    notifications: "通知中心",
+    "ai-analysis": "智能分析",
+    "ai-prediction": "预测分析",
+    "ai-automation": "自动化",
+    settings: "系统设置",
+    database: "数据库管理",
+    integrations: "集成管理",
+    backup: "备份恢复",
   }
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
-      {/* 左侧：搜索栏 */}
-      <div className="flex items-center space-x-4 flex-1">
-        <div className="relative max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="搜索客户、任务、项目..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 w-full bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300"
-          />
+    <header className={`bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 ${className}`}>
+      <div className="flex items-center justify-between h-16 px-6">
+        {/* 左侧：菜单按钮和标题 */}
+        <div className="flex items-center space-x-4">
+          {isMobile && (
+            <Button variant="ghost" size="icon" onClick={toggle} className="lg:hidden">
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
+
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {moduleNames[activeModule] || "服务中心"}
+          </h1>
         </div>
-      </div>
 
-      {/* 中间：时间显示 */}
-      <div className="hidden lg:flex items-center space-x-2 text-sm text-gray-600">
-        <Clock className="h-4 w-4" />
-        <span>{getCurrentTime()}</span>
-      </div>
+        {/* 中间：搜索框 */}
+        <div className="hidden md:flex flex-1 max-w-xl mx-8">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="search"
+              placeholder="搜索客户、任务、订单..."
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900"
+            />
+          </div>
+        </div>
 
-      {/* 右侧：操作按钮 */}
-      <div className="flex items-center space-x-3">
-        {/* 快捷操作 */}
-        <Button variant="ghost" size="sm" className="hidden md:flex">
-          <Calendar className="h-4 w-4 mr-2" />
-          日程
-        </Button>
+        {/* 右侧：操作按钮 */}
+        <div className="flex items-center space-x-2">
+          {/* 通知 */}
+          <Button variant="ghost" size="icon" className="relative rounded-full">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          </Button>
 
-        <Button variant="ghost" size="sm" className="hidden md:flex">
-          <MessageSquare className="h-4 w-4 mr-2" />
-          消息
-        </Button>
+          {/* 设置 */}
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Settings className="h-5 w-5" />
+          </Button>
 
-        {/* 主题切换 */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="h-9 w-9 p-0"
-        >
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">切换主题</span>
-        </Button>
-
-        {/* 通知 */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0">
-              <Bell className="h-4 w-4" />
-              {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500 hover:bg-red-600">
-                  {unreadCount}
-                </Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel className="flex items-center justify-between">
-              <span>通知中心</span>
-              <Badge variant="secondary">{unreadCount} 条未读</Badge>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <div className="max-h-64 overflow-y-auto">
-              {notifications.map((notification) => (
-                <DropdownMenuItem key={notification.id} className="flex flex-col items-start p-3 cursor-pointer">
-                  <div className="flex items-start justify-between w-full">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{notification.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{notification.message}</p>
-                    </div>
-                    {notification.unread && <div className="w-2 h-2 bg-blue-500 rounded-full mt-1 ml-2"></div>}
-                  </div>
-                  <span className="text-xs text-gray-400 mt-2">{notification.time}</span>
-                </DropdownMenuItem>
-              ))}
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-center text-blue-600 cursor-pointer">查看所有通知</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* 设置 */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>系统设置</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Globe className="mr-2 h-4 w-4" />
-              语言设置
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Bell className="mr-2 h-4 w-4" />
-              通知设置
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <HelpCircle className="mr-2 h-4 w-4" />
-              帮助中心
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* 用户菜单 */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src="/images/avatar-placeholder.png" alt="用户头像" />
-                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">管</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">系统管理员</p>
-                <p className="text-xs leading-none text-muted-foreground">admin@company.com</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              个人资料
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              账户设置
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <HelpCircle className="mr-2 h-4 w-4" />
-              帮助支持
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">
-              <LogOut className="mr-2 h-4 w-4" />
-              退出登录
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          {/* 用户菜单 */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>我的账户</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>个人资料</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>设置</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600">退出登录</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   )

@@ -1,13 +1,7 @@
 "use client"
 
-import { UserTraining } from "@/components/user-training"
-import { FloatingNavButtons } from "@/components/ui/floating-nav-buttons"
+import { UserTrainingCenter } from "@/components/training/user-training-center"
 
 export default function TrainingPage() {
-  return (
-    <>
-      <UserTraining />
-      <FloatingNavButtons />
-    </>
-  )
+  return <UserTrainingCenter />
 }

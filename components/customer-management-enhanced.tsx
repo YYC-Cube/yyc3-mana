@@ -25,7 +25,12 @@ import {
   DollarSign,
   Clock,
   Target,
+  Upload,
 } from "lucide-react"
+import { DataImportExport } from "./data-import-export"
+import { BatchOperations } from "./batch-operations"
+import { GlobalShortcuts } from "./global-shortcuts"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const customers = [
   {
@@ -89,6 +94,8 @@ export function CustomerManagementEnhanced() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCustomer, setSelectedCustomer] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState("list")
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([])
+  const [showImportExport, setShowImportExport] = useState(false)
 
   const filteredCustomers = customers.filter(
     (customer) =>
@@ -160,6 +167,14 @@ export function CustomerManagementEnhanced() {
               </EnhancedButton>
               <EnhancedButton
                 variant="primary"
+                icon={showImportExport ? Upload : Download}
+                onClick={() => setShowImportExport(!showImportExport)}
+                className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
+              >
+                {showImportExport ? "关闭导入导出" : "导入导出"}
+              </EnhancedButton>
+              <EnhancedButton
+                variant="primary"
                 icon={Download}
                 className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
               >
@@ -176,119 +191,168 @@ export function CustomerManagementEnhanced() {
           </div>
 
           <TabsContent value="list" className="space-y-4">
-            <div className="grid gap-4">
-              {filteredCustomers.map((customer) => (
-                <div
-                  key={customer.id}
-                  className={`${commonStyles.card} p-6 hover:scale-[1.01] cursor-pointer transition-all duration-200`}
-                  onClick={() => setSelectedCustomer(customer.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg">
-                        {customer.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-slate-800 text-lg">{customer.name}</h3>
-                          <Badge className={commonStyles.badge.primary}>{customer.level}</Badge>
-                          <Badge
-                            variant="outline"
-                            className={
-                              customer.status === "活跃"
-                                ? commonStyles.badge.success
-                                : customer.status === "潜在"
-                                  ? commonStyles.badge.warning
-                                  : commonStyles.badge.secondary
+            <div className="space-y-4">
+              {/* 批量操作工具栏 */}
+              <BatchOperations
+                selectedItems={selectedCustomers}
+                totalItems={filteredCustomers.length}
+                itemType="customer"
+                onSelectAll={(selected) => {
+                  if (selected) {
+                    setSelectedCustomers(filteredCustomers.map((c) => c.id.toString()))
+                  } else {
+                    setSelectedCustomers([])
+                  }
+                }}
+                onBatchAction={(action, options) => {
+                  console.log(`批量操作: ${action}`, options)
+                  // 处理批量操作逻辑
+                }}
+                onClearSelection={() => setSelectedCustomers([])}
+              />
+
+              {/* 数据导入导出 */}
+              {showImportExport && (
+                <DataImportExport
+                  type="customer"
+                  onImport={(data) => {
+                    console.log("导入客户数据:", data)
+                    setShowImportExport(false)
+                  }}
+                  onExport={(format, filters) => {
+                    console.log("导出客户数据:", format, filters)
+                  }}
+                />
+              )}
+
+              {/* 客户列表 */}
+              <div className="grid gap-4">
+                {filteredCustomers.map((customer) => (
+                  <div
+                    key={customer.id}
+                    className={`${commonStyles.card} p-6 hover:scale-[1.01] cursor-pointer transition-all duration-200 ${
+                      selectedCustomers.includes(customer.id.toString()) ? "ring-2 ring-sky-500 bg-sky-50/30" : ""
+                    }`}
+                    onClick={() => setSelectedCustomer(customer.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <Checkbox
+                          checked={selectedCustomers.includes(customer.id.toString())}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCustomers((prev) => [...prev, customer.id.toString()])
+                            } else {
+                              setSelectedCustomers((prev) => prev.filter((id) => id !== customer.id.toString()))
                             }
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg">
+                          {customer.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h3 className="font-semibold text-slate-800 text-lg">{customer.name}</h3>
+                            <Badge className={commonStyles.badge.primary}>{customer.level}</Badge>
+                            <Badge
+                              variant="outline"
+                              className={
+                                customer.status === "活跃"
+                                  ? commonStyles.badge.success
+                                  : customer.status === "潜在"
+                                    ? commonStyles.badge.warning
+                                    : commonStyles.badge.secondary
+                              }
+                            >
+                              {customer.status}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center space-x-4 text-sm text-slate-600">
+                            <div className="flex items-center">
+                              <Users className="w-4 h-4 mr-1 text-sky-500" />
+                              {customer.contact}
+                            </div>
+                            <div className="flex items-center">
+                              <Phone className="w-4 h-4 mr-1 text-sky-500" />
+                              {customer.phone}
+                            </div>
+                            <div className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1 text-sky-500" />
+                              {customer.address}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-6">
+                        <div className="text-right">
+                          <p className="text-sm text-slate-600">客户价值</p>
+                          <p className="font-bold text-lg text-slate-800">{customer.value}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-slate-600">满意度</p>
+                          <div className="flex items-center">
+                            <div className="w-16 bg-sky-100 rounded-full h-2 mr-2">
+                              <div
+                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${customer.satisfaction}%` }}
+                              />
+                            </div>
+                            <span className="font-medium text-emerald-600">{customer.satisfaction}%</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <EnhancedButton
+                            variant="primary"
+                            size="sm"
+                            icon={Eye}
+                            className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
                           >
-                            {customer.status}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center space-x-4 text-sm text-slate-600">
-                          <div className="flex items-center">
-                            <Users className="w-4 h-4 mr-1 text-sky-500" />
-                            {customer.contact}
-                          </div>
-                          <div className="flex items-center">
-                            <Phone className="w-4 h-4 mr-1 text-sky-500" />
-                            {customer.phone}
-                          </div>
-                          <div className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-1 text-sky-500" />
-                            {customer.address}
-                          </div>
+                            查看
+                          </EnhancedButton>
+                          <EnhancedButton
+                            variant="primary"
+                            size="sm"
+                            icon={MessageCircle}
+                            className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
+                          >
+                            沟通
+                          </EnhancedButton>
+                          <EnhancedButton
+                            variant="primary"
+                            size="sm"
+                            icon={Edit}
+                            className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
+                          >
+                            编辑
+                          </EnhancedButton>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-6">
-                      <div className="text-right">
-                        <p className="text-sm text-slate-600">客户价值</p>
-                        <p className="font-bold text-lg text-slate-800">{customer.value}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-slate-600">满意度</p>
-                        <div className="flex items-center">
-                          <div className="w-16 bg-sky-100 rounded-full h-2 mr-2">
-                            <div
-                              className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-2 rounded-full transition-all duration-500"
-                              style={{ width: `${customer.satisfaction}%` }}
-                            />
-                          </div>
-                          <span className="font-medium text-emerald-600">{customer.satisfaction}%</span>
+                    <div className="mt-4 pt-4 border-t border-sky-100 flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center text-slate-600">
+                          <Clock className="w-4 h-4 mr-1 text-sky-500" />
+                          最后联系: {customer.lastContact}
+                        </div>
+                        <div className="flex items-center text-slate-600">
+                          <Calendar className="w-4 h-4 mr-1 text-sky-500" />
+                          下次跟进: {customer.nextFollow}
+                        </div>
+                        <div className="flex items-center text-slate-600">
+                          <Target className="w-4 h-4 mr-1 text-sky-500" />
+                          订单数: {customer.orders}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <EnhancedButton
-                          variant="primary"
-                          size="sm"
-                          icon={Eye}
-                          className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
-                        >
-                          查看
-                        </EnhancedButton>
-                        <EnhancedButton
-                          variant="primary"
-                          size="sm"
-                          icon={MessageCircle}
-                          className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
-                        >
-                          沟通
-                        </EnhancedButton>
-                        <EnhancedButton
-                          variant="primary"
-                          size="sm"
-                          icon={Edit}
-                          className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
-                        >
-                          编辑
-                        </EnhancedButton>
-                      </div>
+                      <Badge variant="outline" className={commonStyles.badge.secondary}>
+                        {customer.category}
+                      </Badge>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-4 border-t border-sky-100 flex items-center justify-between text-sm">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center text-slate-600">
-                        <Clock className="w-4 h-4 mr-1 text-sky-500" />
-                        最后联系: {customer.lastContact}
-                      </div>
-                      <div className="flex items-center text-slate-600">
-                        <Calendar className="w-4 h-4 mr-1 text-sky-500" />
-                        下次跟进: {customer.nextFollow}
-                      </div>
-                      <div className="flex items-center text-slate-600">
-                        <Target className="w-4 h-4 mr-1 text-sky-500" />
-                        订单数: {customer.orders}
-                      </div>
-                    </div>
-                    <Badge variant="outline" className={commonStyles.badge.secondary}>
-                      {customer.category}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </TabsContent>
 
@@ -333,6 +397,16 @@ export function CustomerManagementEnhanced() {
           </TabsContent>
         </Tabs>
       </EnhancedCard>
+      <GlobalShortcuts
+        onNavigate={(path) => {
+          console.log("导航到:", path)
+          // 处理导航逻辑
+        }}
+        onAction={(actionId) => {
+          console.log("执行操作:", actionId)
+          // 处理快捷键操作
+        }}
+      />
     </PageContainer>
   )
 }

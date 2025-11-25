@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -16,140 +16,170 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Users,
-  Plus,
-  Search,
-  Phone,
-  Mail,
-  MapPin,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  UserPlus,
-  Edit,
-  Eye,
-  Download,
-  MessageSquare,
-  MoreHorizontal,
-} from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getProgressColor } from "@/lib/design-system"
+import { Users, Plus, Search, Filter, Phone, Mail, MapPin, Calendar, TrendingUp, Star, Eye, Edit } from 'lucide-react'
 
 interface Customer {
   id: string
   name: string
-  company: string
   email: string
   phone: string
-  address: string
-  status: "active" | "inactive" | "potential"
+  company: string
+  location: string
+  status: "active" | "inactive" | "potential" | "vip"
   value: number
   lastContact: string
-  assignedTo: string
+  avatar?: string
   tags: string[]
-  notes: string
-  satisfaction?: number
+  satisfaction: number
 }
 
 export function CustomerManagement() {
-  const [customers, setCustomers] = useState<Customer[]>([
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+
+  // 模拟客户数据
+  const customers: Customer[] = [
     {
       id: "1",
-      name: "张总",
-      company: "华润集团",
-      email: "zhang@huarun.com",
+      name: "张明华",
+      email: "zhang@company.com",
       phone: "138-0000-1234",
-      address: "深圳市南山区",
-      status: "active",
-      value: 500000,
-      lastContact: "2025-06-19",
-      assignedTo: "李销售",
-      tags: ["VIP", "大客户"],
-      notes: "重要客户，需要定期维护",
+      company: "科技有限公司",
+      location: "北京市朝阳区",
+      status: "vip",
+      value: 850000,
+      lastContact: "2025-06-20",
+      tags: ["重要客户", "长期合作"],
       satisfaction: 95,
     },
     {
       id: "2",
-      name: "王经理",
-      company: "万科地产",
-      email: "wang@vanke.com",
+      name: "李小红",
+      email: "li@startup.com",
       phone: "139-0000-5678",
-      address: "广州市天河区",
-      status: "potential",
-      value: 300000,
+      company: "创新科技",
+      location: "上海市浦东新区",
+      status: "active",
+      value: 320000,
       lastContact: "2025-06-18",
-      assignedTo: "陈销售",
-      tags: ["潜在客户"],
-      notes: "正在洽谈中，有合作意向",
-      satisfaction: 78,
+      tags: ["新客户", "潜力大"],
+      satisfaction: 87,
     },
     {
       id: "3",
-      name: "刘总监",
-      company: "碧桂园",
-      email: "liu@bgy.com",
+      name: "王建国",
+      email: "wang@enterprise.com",
       phone: "137-0000-9012",
-      address: "佛山市顺德区",
-      status: "active",
-      value: 800000,
-      lastContact: "2025-06-17",
-      assignedTo: "李销售",
-      tags: ["VIP", "长期合作"],
-      notes: "长期合作伙伴，信任度高",
-      satisfaction: 88,
+      company: "传统制造业",
+      location: "广州市天河区",
+      status: "potential",
+      value: 150000,
+      lastContact: "2025-06-15",
+      tags: ["待跟进"],
+      satisfaction: 72,
     },
-  ])
+    {
+      id: "4",
+      name: "陈美丽",
+      email: "chen@design.com",
+      phone: "136-0000-3456",
+      company: "设计工作室",
+      location: "深圳市南山区",
+      status: "active",
+      value: 280000,
+      lastContact: "2025-06-19",
+      tags: ["设计行业", "合作愉快"],
+      satisfaction: 91,
+    },
+    {
+      id: "5",
+      name: "刘大伟",
+      email: "liu@consulting.com",
+      phone: "135-0000-7890",
+      company: "咨询公司",
+      location: "杭州市西湖区",
+      status: "inactive",
+      value: 120000,
+      lastContact: "2025-05-28",
+      tags: ["需要激活"],
+      satisfaction: 65,
+    },
+  ]
 
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
+      case "vip":
+        return "bg-orange-100 text-orange-800"
       case "active":
-        return <Badge className="bg-green-100 text-green-800 border-green-200">活跃客户</Badge>
+        return "bg-orange-100 text-orange-800"
       case "potential":
-        return <Badge className="bg-amber-100 text-amber-800 border-amber-200">潜在客户</Badge>
+        return "bg-orange-100 text-orange-800"
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800 border-gray-200">非活跃</Badge>
+        return "bg-gray-100 text-gray-800"
       default:
-        return <Badge variant="secondary">未知</Badge>
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "vip":
+        return "VIP客户"
+      case "active":
+        return "活跃客户"
+      case "potential":
+        return "潜在客户"
+      case "inactive":
+        return "非活跃"
+      default:
+        return "未知"
+    }
+  }
 
-  const totalCustomers = customers.length
-  const activeCustomers = customers.filter((c) => c.status === "active").length
-  const potentialCustomers = customers.filter((c) => c.status === "potential").length
-  const totalValue = customers.reduce((sum, c) => sum + c.value, 0)
+  const getSatisfactionColor = (satisfaction: number) => {
+    if (satisfaction >= 90) return "from-orange-400 to-orange-500"
+    if (satisfaction >= 80) return "from-orange-300 to-orange-400"
+    if (satisfaction >= 70) return "from-yellow-400 to-yellow-500"
+    return "from-red-400 to-red-500"
+  }
+
+  const filteredCustomers = customers.filter((customer) => {
+    const matchesSearch =
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "all" || customer.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
+
+  const totalValue = customers.reduce((sum, customer) => sum + customer.value, 0)
+  const activeCustomers = customers.filter((c) => c.status === "active" || c.status === "vip").length
+  const avgSatisfaction = Math.round(customers.reduce((sum, c) => sum + c.satisfaction, 0) / customers.length)
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 min-h-screen">
+      {/* 页面头部 */}
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">客户管理系统</h1>
-          <p className="text-gray-600 mt-1">全面的客户关系管理平台</p>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+            <Users className="w-8 h-8 mr-3 text-orange-600" />
+            客户管理
+          </h1>
+          <p className="text-gray-600 mt-2">全生命周期客户关系管理系统</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="搜索客户..."
-              className="pl-10 w-64"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <div className="flex space-x-3">
+          <Button
+            variant="outline"
+            className="border-l-4 border-l-orange-500 transition-all duration-300 hover:scale-105 hover:shadow-xl bg-transparent group"
+          >
+            <Filter className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+            筛选
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
+              <Button className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white transition-all duration-300 hover:shadow-xl hover:scale-105 group">
+                <Plus className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
                 添加客户
               </Button>
             </DialogTrigger>
@@ -159,381 +189,242 @@ export function CustomerManagement() {
                 <DialogDescription>填写客户基本信息</DialogDescription>
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="name">客户姓名</Label>
-                  <Input id="name" placeholder="请输入客户姓名" />
+                  <Input id="name" placeholder="输入客户姓名" className="border-l-4 border-l-orange-500" />
                 </div>
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="company">公司名称</Label>
-                  <Input id="company" placeholder="请输入公司名称" />
+                  <Input id="company" placeholder="输入公司名称" className="border-l-4 border-l-orange-500" />
                 </div>
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="email">邮箱地址</Label>
-                  <Input id="email" type="email" placeholder="请输入邮箱地址" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="输入邮箱地址"
+                    className="border-l-4 border-l-orange-500"
+                  />
                 </div>
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="phone">联系电话</Label>
-                  <Input id="phone" placeholder="请输入联系电话" />
+                  <Input id="phone" placeholder="输入联系电话" className="border-l-4 border-l-orange-500" />
                 </div>
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="address">联系地址</Label>
-                  <Input id="address" placeholder="请输入联系地址" />
+                <div className="col-span-2">
+                  <Label htmlFor="location">地址</Label>
+                  <Input id="location" placeholder="输入详细地址" className="border-l-4 border-l-orange-500" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">客户状态</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择客户状态" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">活跃客户</SelectItem>
-                      <SelectItem value="potential">潜在客户</SelectItem>
-                      <SelectItem value="inactive">非活跃</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="col-span-2 flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    取消
+                  </Button>
+                  <Button
+                    onClick={() => setIsCreateDialogOpen(false)}
+                    className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white"
+                  >
+                    添加客户
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="value">预估价值</Label>
-                  <Input id="value" type="number" placeholder="请输入预估价值" />
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="notes">备注信息</Label>
-                  <Textarea id="notes" placeholder="请输入备注信息" />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-2 mt-4">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                  取消
-                </Button>
-                <Button
-                  onClick={() => setIsAddDialogOpen(false)}
-                  className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
-                >
-                  保存客户
-                </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      {/* 客户统计卡片 - 严格执行统一规范 */}
+      {/* 统计概览 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-emerald-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">客户总数</p>
-                <p className="text-3xl font-bold text-emerald-600">{totalCustomers}</p>
-                <p className="text-xs text-gray-500 mt-1">全部客户数量</p>
-              </div>
-              <Users className="w-8 h-8 text-emerald-400" />
-            </div>
+        <Card className="border-l-4 border-l-orange-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">总客户数</CardTitle>
+            <Users className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-700">{customers.length}</div>
+            <p className="text-xs text-gray-600">本月新增 +12</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-sky-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">活跃客户</p>
-                <p className="text-3xl font-bold text-sky-600">{activeCustomers}</p>
-                <p className="text-xs text-gray-500 mt-1">正在合作的客户</p>
-              </div>
-              <UserPlus className="w-8 h-8 text-sky-400" />
-            </div>
+        <Card className="border-l-4 border-l-orange-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">活跃客户</CardTitle>
+            <TrendingUp className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-700">{activeCustomers}</div>
+            <p className="text-xs text-gray-600">活跃率 {Math.round((activeCustomers / customers.length) * 100)}%</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-purple-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">潜在客户</p>
-                <p className="text-3xl font-bold text-purple-600">{potentialCustomers}</p>
-                <p className="text-xs text-gray-500 mt-1">有合作意向的客户</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-purple-400" />
-            </div>
+        <Card className="border-l-4 border-l-orange-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">客户价值</CardTitle>
+            <Star className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-700">¥{(totalValue / 10000).toFixed(0)}万</div>
+            <p className="text-xs text-gray-600">总客户价值</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-amber-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">客户总价值</p>
-                <p className="text-3xl font-bold text-amber-600">¥{totalValue.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">预估总价值</p>
-              </div>
-              <DollarSign className="w-8 h-8 text-amber-400" />
-            </div>
+        <Card className="border-l-4 border-l-orange-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">满意度</CardTitle>
+            <Star className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-700">{avgSatisfaction}%</div>
+            <p className="text-xs text-gray-600">平均客户满意度</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* 客户列表和详情 - 蓝色分区边线 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card className="border-t-4 border-t-blue-400">
-            <CardHeader>
-              <CardTitle>客户列表</CardTitle>
-              <CardDescription>管理您的客户信息</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Card className="border-t-4 border-t-blue-400 mb-4">
-                <CardContent className="p-4">
+      {/* 搜索和筛选 */}
+      <Card className="border-l-4 border-l-orange-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="搜索客户姓名、公司或邮箱..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 border-l-4 border-l-orange-500"
+                />
+              </div>
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48 border-l-4 border-l-orange-500">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部状态</SelectItem>
+                <SelectItem value="vip">VIP客户</SelectItem>
+                <SelectItem value="active">活跃客户</SelectItem>
+                <SelectItem value="potential">潜在客户</SelectItem>
+                <SelectItem value="inactive">非活跃</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 客户列表 */}
+      <Card className="border-l-4 border-l-orange-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader>
+          <CardTitle className="flex items-center text-orange-700">
+            <Users className="w-5 h-5 mr-2" />
+            客户列表
+          </CardTitle>
+          <CardDescription>共找到 {filteredCustomers.length} 位客户</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {filteredCustomers.map((customer) => (
+              <div
+                key={customer.id}
+                className="border-l-4 border-l-orange-500 bg-orange-50 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:scale-105"
+              >
+                <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center space-x-4">
-                    <Select>
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder="客户状态" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">全部状态</SelectItem>
-                        <SelectItem value="active">活跃客户</SelectItem>
-                        <SelectItem value="potential">潜在客户</SelectItem>
-                        <SelectItem value="inactive">非活跃</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline">
-                      <Download className="w-4 h-4 mr-2" />
-                      导出客户
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              <div className="space-y-4">
-                {filteredCustomers.map((customer) => (
-                  <div
-                    key={customer.id}
-                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setSelectedCustomer(customer)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-medium">{customer.name}</h4>
-                        <p className="text-sm text-muted-foreground">{customer.company}</p>
-                      </div>
-                      <div className="flex space-x-2">
-                        {customer.tags.map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {getStatusBadge(customer.status)}
-                      </div>
-                    </div>
-
-                    {/* 客户满意度进度条 */}
-                    {customer.satisfaction && (
-                      <div className="mb-3">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm text-gray-600">客户满意度</span>
-                          <span className="text-sm font-medium">{customer.satisfaction}%</span>
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={customer.avatar || "/placeholder.svg"} />
+                      <AvatarFallback className="bg-orange-200 text-orange-700">
+                        {customer.name.slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-lg">{customer.name}</h3>
+                      <p className="text-gray-600">{customer.company}</p>
+                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                        <div className="flex items-center">
+                          <Mail className="w-4 h-4 mr-1" />
+                          {customer.email}
                         </div>
-                        <div className="w-full bg-slate-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all duration-500 ${getProgressColor(customer.satisfaction)}`}
-                            style={{ width: `${customer.satisfaction}%` }}
-                          />
+                        <div className="flex items-center">
+                          <Phone className="w-4 h-4 mr-1" />
+                          {customer.phone}
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          {customer.location}
                         </div>
                       </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <Phone className="w-4 h-4 mr-1" />
-                        {customer.phone}
-                      </div>
-                      <div className="flex items-center">
-                        <Mail className="w-4 h-4 mr-1" />
-                        {customer.email}
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        {customer.address}
-                      </div>
-                      <div className="flex items-center">
-                        <DollarSign className="w-4 h-4 mr-1" />¥{customer.value.toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center mt-3">
-                      <span className="text-sm text-muted-foreground">负责人: {customer.assignedTo}</span>
-                      <span className="text-sm text-muted-foreground">最后联系: {customer.lastContact}</span>
-                    </div>
-                    <div className="flex justify-end space-x-2 mt-3">
-                      <Button size="sm" variant="outline">
-                        <Phone className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Mail className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <MessageSquare className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          <Card className="border-t-4 border-t-blue-400">
-            <CardHeader>
-              <CardTitle>客户详情</CardTitle>
-              <CardDescription>查看和编辑客户信息</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {selectedCustomer ? (
-                <Tabs defaultValue="info" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="info">基本信息</TabsTrigger>
-                    <TabsTrigger value="follow">跟进记录</TabsTrigger>
-                    <TabsTrigger value="opportunities">销售机会</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="info" className="space-y-4">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-bold text-lg">{selectedCustomer.name}</h3>
-                          <p className="text-muted-foreground">{selectedCustomer.company}</p>
-                        </div>
-                        {getStatusBadge(selectedCustomer.status)}
-                      </div>
-
-                      {/* 客户满意度详细显示 */}
-                      {selectedCustomer.satisfaction && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-medium">客户满意度</span>
-                            <span className="text-sm font-bold">{selectedCustomer.satisfaction}%</span>
-                          </div>
-                          <div className="w-full bg-slate-200 rounded-full h-3">
-                            <div
-                              className={`h-3 rounded-full transition-all duration-500 ${getProgressColor(selectedCustomer.satisfaction)}`}
-                              style={{ width: `${selectedCustomer.satisfaction}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                          <Phone className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{selectedCustomer.phone}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Mail className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{selectedCustomer.email}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{selectedCustomer.address}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <DollarSign className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">¥{selectedCustomer.value.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">最后联系: {selectedCustomer.lastContact}</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="font-medium mb-2">标签</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedCustomer.tags.map((tag) => (
-                            <Badge key={tag} variant="outline">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="font-medium mb-2">备注</h4>
-                        <p className="text-sm text-muted-foreground">{selectedCustomer.notes}</p>
-                      </div>
-
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          className="flex-1 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
-                        >
-                          <Edit className="w-4 h-4 mr-2" />
-                          编辑
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Eye className="w-4 h-4 mr-2" />
-                          详情
-                        </Button>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="follow" className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-medium">跟进记录</h4>
-                        <Button
-                          size="sm"
-                          className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          添加跟进
-                        </Button>
-                      </div>
-                      {/* 跟进记录列表 */}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="opportunities" className="space-y-4">
-                    {/* 销售机会内容 */}
-                  </TabsContent>
-                </Tabs>
-              ) : (
-                <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">请选择客户查看详情</p>
+                  <div className="flex items-center space-x-2">
+                    <Badge className={getStatusColor(customer.status)}>{getStatusText(customer.status)}</Badge>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
 
-          <Card className="mt-6 border-t-4 border-t-blue-400">
-            <CardHeader>
-              <CardTitle>快速操作</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Button className="w-full" variant="outline">
-                  <Phone className="w-4 h-4 mr-2" />
-                  拨打电话
-                </Button>
-                <Button className="w-full" variant="outline">
-                  <Mail className="w-4 h-4 mr-2" />
-                  发送邮件
-                </Button>
-                <Button className="w-full" variant="outline">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  安排会议
-                </Button>
-                <Button className="w-full" variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  添加跟进
-                </Button>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-gray-900">¥{(customer.value / 10000).toFixed(0)}万</div>
+                    <div className="text-xs text-gray-600">客户价值</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-gray-900">{customer.satisfaction}%</div>
+                    <div className="text-xs text-gray-600">满意度</div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                      <div
+                        className={`h-full bg-gradient-to-r ${getSatisfactionColor(customer.satisfaction)} rounded-full transition-all duration-500`}
+                        style={{ width: `${customer.satisfaction}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-gray-900">{customer.lastContact}</div>
+                    <div className="text-xs text-gray-600">最后联系</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {customer.tags.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-l-4 border-l-orange-500 transition-all duration-300 hover:scale-105 bg-transparent group"
+                  >
+                    <Eye className="w-4 h-4 mr-1 group-hover:translate-x-1 transition-all duration-300" />
+                    查看
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-l-4 border-l-orange-500 transition-all duration-300 hover:scale-105 bg-transparent group"
+                  >
+                    <Edit className="w-4 h-4 mr-1 group-hover:translate-x-1 transition-all duration-300" />
+                    编辑
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-l-4 border-l-orange-500 transition-all duration-300 hover:scale-105 bg-transparent group"
+                  >
+                    <Phone className="w-4 h-4 mr-1 group-hover:translate-x-1 transition-all duration-300" />
+                    联系
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white transition-all duration-300 hover:scale-105 group"
+                  >
+                    <Calendar className="w-4 h-4 mr-1 group-hover:translate-x-1 transition-all duration-300" />
+                    跟进
+                  </Button>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

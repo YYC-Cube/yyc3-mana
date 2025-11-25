@@ -26,8 +26,12 @@ import {
   Target,
   Timer,
   BarChart3,
+  Clock,
+  FileIcon as FileTemplate,
 } from "lucide-react"
-import { getProgressColor } from "@/lib/design-system"
+
+import { TimeTracker } from "./time-tracker"
+import { TaskTemplates } from "./task-templates"
 
 const tasks = [
   {
@@ -88,6 +92,12 @@ export function TaskManagementEnhanced() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTask, setSelectedTask] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState("kanban")
+
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([])
+  const [showTimeTracker, setShowTimeTracker] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(false)
+  const [showImportExport, setShowImportExport] = useState(false)
+  const [trackingTaskId, setTrackingTaskId] = useState<string | null>(null)
 
   const filteredTasks = tasks.filter(
     (task) =>
@@ -167,6 +177,15 @@ export function TaskManagementEnhanced() {
               <TabsTrigger value="analytics" className="data-[state=active]:bg-white data-[state=active]:text-sky-700">
                 数据分析
               </TabsTrigger>
+              <TabsTrigger value="templates" className="data-[state=active]:bg-white data-[state=active]:text-sky-700">
+                任务模板
+              </TabsTrigger>
+              <TabsTrigger
+                value="time-tracking"
+                className="data-[state=active]:bg-white data-[state=active]:text-sky-700"
+              >
+                时间追踪
+              </TabsTrigger>
             </TabsList>
 
             <div className="flex items-center space-x-3">
@@ -181,6 +200,12 @@ export function TaskManagementEnhanced() {
               </div>
               <EnhancedButton variant="secondary" icon={Filter}>
                 筛选
+              </EnhancedButton>
+              <EnhancedButton variant="secondary" icon={Clock} onClick={() => setShowTimeTracker(true)}>
+                时间追踪
+              </EnhancedButton>
+              <EnhancedButton variant="secondary" icon={FileTemplate} onClick={() => setShowTemplates(true)}>
+                任务模板
               </EnhancedButton>
               <EnhancedButton icon={Plus}>新建任务</EnhancedButton>
             </div>
@@ -292,7 +317,7 @@ export function TaskManagementEnhanced() {
                             </div>
                             <div className="w-full bg-sky-100 rounded-full h-2">
                               <div
-                                className={`h-2 rounded-full transition-all duration-500 ${getProgressColor(task.progress, task.status)}`}
+                                className="bg-gradient-to-r from-blue-400 to-blue-500 h-2 rounded-full transition-all duration-500"
                                 style={{ width: `${task.progress}%` }}
                               />
                             </div>
@@ -500,6 +525,18 @@ export function TaskManagementEnhanced() {
                         <EnhancedButton variant="ghost" size="sm" icon={MessageSquare}>
                           评论
                         </EnhancedButton>
+                        <EnhancedButton
+                          variant="ghost"
+                          size="sm"
+                          icon={Timer}
+                          onClick={() => {
+                            setTrackingTaskId(task.id.toString())
+                            setShowTimeTracker(true)
+                            setActiveTab("time-tracking")
+                          }}
+                        >
+                          计时
+                        </EnhancedButton>
                         <Button variant="ghost" size="sm">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
@@ -621,6 +658,26 @@ export function TaskManagementEnhanced() {
                 </div>
               </div>
             </EnhancedCard>
+          </TabsContent>
+
+          <TabsContent value="templates" className="space-y-6">
+            <TaskTemplates
+              onUseTemplate={(template) => {
+                console.log("使用模板:", template)
+                // 处理模板使用逻辑
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="time-tracking" className="space-y-6">
+            <TimeTracker
+              taskId={trackingTaskId || undefined}
+              taskName={trackingTaskId ? tasks.find((t) => t.id.toString() === trackingTaskId)?.title : undefined}
+              onTimeUpdate={(totalTime) => {
+                console.log("时间更新:", totalTime)
+                // 更新任务时间
+              }}
+            />
           </TabsContent>
         </Tabs>
       </EnhancedCard>

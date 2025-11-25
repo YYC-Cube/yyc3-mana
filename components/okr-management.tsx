@@ -1,155 +1,51 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { EnhancedProgress } from "@/components/ui/enhanced-progress"
-import { Target, TrendingUp, Users, Calendar, Plus, Edit, Eye, Award } from "lucide-react"
-
-interface OKR {
-  id: string
-  title: string
-  description: string
-  owner: string
-  department: string
-  quarter: string
-  status: "draft" | "active" | "completed" | "cancelled"
-  progress: number
-  keyResults: KeyResult[]
-  createdAt: string
-  dueDate: string
-}
-
-interface KeyResult {
-  id: string
-  title: string
-  description: string
-  target: number
-  current: number
-  unit: string
-  progress: number
-  status: "on-track" | "at-risk" | "off-track"
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import { Target, TrendingUp, Award, Calendar, Users, CheckCircle, Plus, Settings, BarChart3 } from 'lucide-react'
 
 export function OKRManagement() {
-  const [selectedQuarter, setSelectedQuarter] = useState("2025-Q2")
-  const [selectedDepartment, setSelectedDepartment] = useState("all")
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-
-  // 模拟OKR数据
-  const okrs: OKR[] = [
+  const okrs = [
     {
-      id: "1",
-      title: "提升客户满意度和服务质量",
-      description: "通过优化服务流程和提升团队能力，显著提高客户满意度",
-      owner: "张经理",
-      department: "客服部",
-      quarter: "2025-Q2",
-      status: "active",
+      id: "OKR-001",
+      objective: "提升客户满意度",
+      owner: "客户成功团队",
+      quarter: "2024 Q2",
       progress: 75,
-      createdAt: "2025-04-01",
-      dueDate: "2025-06-30",
+      status: "on-track",
       keyResults: [
-        {
-          id: "kr1",
-          title: "客户满意度评分达到4.5分",
-          description: "通过客户调研提升满意度评分",
-          target: 4.5,
-          current: 4.2,
-          unit: "分",
-          progress: 80,
-          status: "on-track",
-        },
-        {
-          id: "kr2",
-          title: "客户投诉处理时间缩短至2小时内",
-          description: "优化投诉处理流程，提升响应速度",
-          target: 2,
-          current: 3.5,
-          unit: "小时",
-          progress: 60,
-          status: "at-risk",
-        },
-        {
-          id: "kr3",
-          title: "客户续约率提升至85%",
-          description: "通过优质服务提高客户续约意愿",
-          target: 85,
-          current: 78,
-          unit: "%",
-          progress: 85,
-          status: "on-track",
-        },
+        { description: "客户满意度达到95%", current: 92, target: 95, progress: 97 },
+        { description: "客户投诉减少50%", current: 45, target: 50, progress: 90 },
+        { description: "客户续约率达到90%", current: 87, target: 90, progress: 97 },
       ],
     },
     {
-      id: "2",
-      title: "数字化转型和系统优化",
-      description: "推进企业数字化转型，提升运营效率",
-      owner: "李总监",
-      department: "技术部",
-      quarter: "2025-Q2",
-      status: "active",
-      progress: 60,
-      createdAt: "2025-04-01",
-      dueDate: "2025-06-30",
+      id: "OKR-002",
+      objective: "提高产品质量",
+      owner: "技术团队",
+      quarter: "2024 Q2",
+      progress: 68,
+      status: "at-risk",
       keyResults: [
-        {
-          id: "kr4",
-          title: "完成核心业务系统升级",
-          description: "升级ERP和CRM系统，提升系统性能",
-          target: 100,
-          current: 65,
-          unit: "%",
-          progress: 65,
-          status: "on-track",
-        },
-        {
-          id: "kr5",
-          title: "员工数字化技能培训覆盖率达到90%",
-          description: "提升全员数字化操作能力",
-          target: 90,
-          current: 72,
-          unit: "%",
-          progress: 80,
-          status: "on-track",
-        },
+        { description: "Bug数量减少60%", current: 55, target: 60, progress: 92 },
+        { description: "代码覆盖率达到85%", current: 78, target: 85, progress: 92 },
+        { description: "发布周期缩短至2周", current: 80, target: 100, progress: 80 },
       ],
     },
     {
-      id: "3",
-      title: "销售业绩突破和市场拓展",
-      description: "实现销售目标突破，扩大市场份额",
-      owner: "王总监",
-      department: "销售部",
-      quarter: "2025-Q2",
-      status: "active",
-      progress: 45,
-      createdAt: "2025-04-01",
-      dueDate: "2025-06-30",
+      id: "OKR-003",
+      objective: "扩大市场份额",
+      owner: "销售团队",
+      quarter: "2024 Q2",
+      progress: 82,
+      status: "on-track",
       keyResults: [
-        {
-          id: "kr6",
-          title: "季度销售额达到500万",
-          description: "通过市场拓展和客户维护实现销售目标",
-          target: 500,
-          current: 320,
-          unit: "万元",
-          progress: 64,
-          status: "at-risk",
-        },
-        {
-          id: "kr7",
-          title: "新客户获取数量达到50个",
-          description: "开发新客户，扩大客户基础",
-          target: 50,
-          current: 28,
-          unit: "个",
-          progress: 56,
-          status: "at-risk",
-        },
+        { description: "新客户获取增长30%", current: 28, target: 30, progress: 93 },
+        { description: "市场占有率提升至15%", current: 14, target: 15, progress: 93 },
+        { description: "销售额增长25%", current: 22, target: 25, progress: 88 },
       ],
     },
   ]
@@ -157,203 +53,336 @@ export function OKRManagement() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "on-track":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200"
+        return "bg-green-100 text-green-800"
       case "at-risk":
-        return "bg-amber-100 text-amber-800 border-amber-200"
+        return "bg-orange-100 text-orange-800"
       case "off-track":
-        return "bg-red-100 text-red-800 border-red-200"
+        return "bg-red-100 text-red-800"
       default:
-        return "bg-slate-100 text-slate-800 border-slate-200"
+        return "bg-blue-100 text-blue-800"
     }
   }
 
   const getStatusText = (status: string) => {
     switch (status) {
       case "on-track":
-        return "进展顺利"
+        return "正常进行"
       case "at-risk":
         return "存在风险"
       case "off-track":
-        return "进度滞后"
+        return "偏离目标"
       default:
         return "未知状态"
     }
   }
 
-  const filteredOKRs = okrs.filter((okr) => {
-    if (selectedDepartment !== "all" && okr.department !== selectedDepartment) return false
-    if (okr.quarter !== selectedQuarter) return false
-    return true
-  })
+  const getProgressColor = (progress: number) => {
+    if (progress >= 80) return "from-blue-400 to-blue-500"
+    if (progress >= 60) return "from-blue-300 to-blue-400"
+    if (progress >= 40) return "from-orange-400 to-orange-500"
+    return "from-red-400 to-red-500"
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* 页面头部 - 统一风格 */}
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 min-h-screen">
+      {/* 页面头部 */}
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">OKR目标管理</h1>
-          <p className="text-slate-600 mt-1">目标与关键结果管理系统</p>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+            <Target className="w-8 h-8 mr-3 text-blue-600" />
+            OKR目标管理
+          </h1>
+          <p className="text-gray-600 mt-2">目标与关键结果管理系统</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <Select value={selectedQuarter} onValueChange={setSelectedQuarter}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="2025-Q1">2025 Q1</SelectItem>
-              <SelectItem value="2025-Q2">2025 Q2</SelectItem>
-              <SelectItem value="2025-Q3">2025 Q3</SelectItem>
-              <SelectItem value="2025-Q4">2025 Q4</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            创建OKR
+        <div className="flex space-x-3">
+          <Button
+            variant="outline"
+            className="border-l-4 border-l-blue-500 transition-all duration-300 hover:scale-105 hover:shadow-xl bg-transparent group"
+          >
+            <Settings className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+            设置
+          </Button>
+          <Button className="bg-gradient-to-r from-blue-500 to-sky-600 hover:from-blue-600 hover:to-sky-700 text-white transition-all duration-300 hover:shadow-xl hover:scale-105 group">
+            <Plus className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+            新建OKR
           </Button>
         </div>
       </div>
 
-      {/* 统计卡片区域 - 严格执行统一规范 */}
+      {/* OKR概览卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-purple-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">总OKR数量</p>
-                <p className="text-3xl font-bold text-purple-600">{filteredOKRs.length}</p>
-                <p className="text-xs text-slate-500 mt-1">本季度活跃目标</p>
-              </div>
-              <Target className="w-8 h-8 text-purple-400" />
-            </div>
+        <Card className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">总目标数</CardTitle>
+            <Target className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-700">{okrs.length}</div>
+            <p className="text-xs text-gray-600">本季度目标</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-sky-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">平均完成度</p>
-                <p className="text-3xl font-bold text-sky-600">
-                  {Math.round(filteredOKRs.reduce((acc, okr) => acc + okr.progress, 0) / filteredOKRs.length)}%
-                </p>
-                <p className="text-xs text-slate-500 mt-1">整体进展情况</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-sky-400" />
+        <Card className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">正常进行</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-700">
+              {okrs.filter((okr) => okr.status === "on-track").length}
             </div>
+            <p className="text-xs text-gray-600">达标目标</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-emerald-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">参与人数</p>
-                <p className="text-3xl font-bold text-emerald-600">12</p>
-                <p className="text-xs text-slate-500 mt-1">涉及团队成员</p>
-              </div>
-              <Users className="w-8 h-8 text-emerald-400" />
+        <Card className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">平均进度</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-700">
+              {Math.round(okrs.reduce((sum, okr) => sum + okr.progress, 0) / okrs.length)}%
             </div>
+            <p className="text-xs text-gray-600">整体完成度</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-amber-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">即将到期</p>
-                <p className="text-3xl font-bold text-amber-600">2</p>
-                <p className="text-xs text-slate-500 mt-1">30天内到期</p>
-              </div>
-              <Calendar className="w-8 h-8 text-amber-400" />
-            </div>
+        <Card className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">团队参与</CardTitle>
+            <Users className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-700">12</div>
+            <p className="text-xs text-gray-600">参与团队数</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* OKR列表 */}
-      <div className="space-y-6">
-        {filteredOKRs.map((okr) => (
-          <Card
-            key={okr.id}
-            className="bg-white/80 backdrop-blur-sm border border-sky-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
-          >
-            <CardHeader className="border-b border-sky-100 bg-gradient-to-r from-sky-50/50 to-blue-50/30">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-lg text-slate-800">{okr.title}</CardTitle>
-                  <CardDescription className="mt-2 text-slate-600">{okr.description}</CardDescription>
-                  <div className="flex items-center space-x-4 mt-3 text-sm text-slate-500">
-                    <span>负责人: {okr.owner}</span>
-                    <span>部门: {okr.department}</span>
-                    <span>截止: {okr.dueDate}</span>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="border-sky-200 text-sky-700">
-                    {okr.quarter}
-                  </Badge>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-slate-800">{okr.progress}%</div>
-                    <div className="w-20 mt-1">
-                      <EnhancedProgress value={okr.progress} size="sm" />
+      {/* OKR详细管理 */}
+      <Card className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader>
+          <CardTitle className="flex items-center text-blue-700">
+            <Target className="w-5 h-5 mr-2" />
+            OKR管理详情
+          </CardTitle>
+          <CardDescription>目标设定、跟踪和评估</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="current" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="current">当前OKR</TabsTrigger>
+              <TabsTrigger value="team">团队OKR</TabsTrigger>
+              <TabsTrigger value="progress">进度跟踪</TabsTrigger>
+              <TabsTrigger value="review">回顾评估</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="current" className="space-y-6">
+              {okrs.map((okr) => (
+                <div
+                  key={okr.id}
+                  className="border-l-4 border-l-blue-500 bg-blue-50 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:scale-105"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-900 text-lg">{okr.objective}</h3>
+                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          {okr.owner}
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          {okr.quarter}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={getStatusColor(okr.status)}>{getStatusText(okr.status)}</Badge>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-blue-700">{okr.progress}%</div>
+                        <div className="text-xs text-gray-500">整体进度</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <h4 className="font-medium text-sm text-slate-600">关键结果 (Key Results)</h4>
-                <div className="space-y-3">
-                  {okr.keyResults.map((kr) => (
-                    <div key={kr.id} className="border border-sky-200 rounded-lg p-4 bg-sky-50/30">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <h5 className="font-medium text-slate-800">{kr.title}</h5>
-                          <p className="text-sm text-slate-600 mt-1">{kr.description}</p>
-                        </div>
-                        <Badge className={getStatusColor(kr.status)}>{getStatusText(kr.status)}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center mt-3">
-                        <div className="text-sm">
-                          <span className="font-medium text-slate-800">{kr.current}</span>
-                          <span className="text-slate-600">
-                            {" "}
-                            / {kr.target} {kr.unit}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-24">
-                            <EnhancedProgress value={kr.progress} status={kr.status} size="sm" />
+
+                  <div className="space-y-4">
+                    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full bg-gradient-to-r ${getProgressColor(okr.progress)} rounded-full transition-all duration-500`}
+                        style={{ width: `${okr.progress}%` }}
+                      ></div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-gray-900">关键结果</h4>
+                      {okr.keyResults.map((kr, index) => (
+                        <div key={index} className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium">{kr.description}</span>
+                            <span className="text-sm text-gray-600">{kr.progress}%</span>
                           </div>
-                          <span className="text-sm font-medium text-slate-700">{kr.progress}%</span>
+                          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full transition-all duration-500"
+                              style={{ width: `${kr.progress}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            当前: {kr.current} / 目标: {kr.target}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="team" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { team: "销售团队", objectives: 3, avgScore: 8.5, members: 8 },
+                  { team: "技术团队", objectives: 4, avgScore: 7.8, members: 12 },
+                  { team: "产品团队", objectives: 2, avgScore: 9.1, members: 6 },
+                  { team: "运营团队", objectives: 3, avgScore: 8.2, members: 10 },
+                ].map((team, index) => (
+                  <Card
+                    key={index}
+                    className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    <CardHeader>
+                      <CardTitle className="text-base text-blue-700">{team.team}</CardTitle>
+                      <CardDescription>{team.members} 名成员</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-sm">目标数量</span>
+                          <Badge variant="secondary" className="bg-blue-50 text-blue-700">
+                            {team.objectives}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">平均得分</span>
+                          <span className="font-medium text-green-600">{team.avgScore}/10</span>
+                        </div>
+                        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full transition-all duration-500"
+                            style={{ width: `${team.avgScore * 10}%` }}
+                          ></div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-end space-x-2 pt-4 border-t border-sky-100">
-                  <Button variant="outline" size="sm" className="border-sky-200 text-sky-700 hover:bg-sky-50">
-                    <Eye className="w-4 h-4 mr-2" />
-                    查看详情
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-sky-200 text-sky-700 hover:bg-sky-50">
-                    <Edit className="w-4 h-4 mr-2" />
-                    编辑OKR
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
-                  >
-                    <Award className="w-4 h-4 mr-2" />
-                    更新进度
-                  </Button>
-                </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </TabsContent>
+
+            <TabsContent value="progress" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base text-blue-700">整体进度</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600 mb-2">75%</div>
+                      <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-3/4 h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full transition-all duration-500"></div>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">季度目标完成度</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base text-blue-700">风险目标</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm">高风险</span>
+                        <Badge variant="destructive">1</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">中风险</span>
+                        <Badge variant="secondary">2</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">低风险</span>
+                        <Badge variant="outline">0</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base text-blue-700">关键里程碑</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span className="text-sm">Q2 中期检查</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-blue-400 rounded-full"></div>
+                        <span className="text-sm">Q2 最终评估</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                        <span className="text-sm">Q3 规划</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="review" className="space-y-4">
+              <div className="space-y-4">
+                {[
+                  { period: "2024 Q1", score: 8.7, status: "已完成", highlights: "超额完成销售目标，客户满意度创新高" },
+                  { period: "2023 Q4", score: 7.9, status: "已完成", highlights: "产品功能迭代顺利，用户增长稳定" },
+                  { period: "2023 Q3", score: 8.2, status: "已完成", highlights: "团队协作效率提升，项目按时交付" },
+                ].map((review, index) => (
+                  <Card
+                    key={index}
+                    className="border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h3 className="font-medium">{review.period}</h3>
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              {review.status}
+                            </Badge>
+                            <span className="text-lg font-bold text-green-600">{review.score}/10</span>
+                          </div>
+                          <p className="text-sm text-gray-600">{review.highlights}</p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-l-4 border-l-blue-500 transition-all duration-300 hover:scale-105 bg-transparent group"
+                        >
+                          <span className="group-hover:translate-x-1 transition-all duration-300">查看详情</span>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   )
 }

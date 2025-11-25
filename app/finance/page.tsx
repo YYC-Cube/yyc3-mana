@@ -1,220 +1,315 @@
 "use client"
 
-import { PageContainer } from "@/components/layout/page-container"
-import { FloatingNavButtons } from "@/components/ui/floating-nav-buttons"
-import { EnhancedCard } from "@/components/ui/enhanced-card"
-import { EnhancedButton } from "@/components/ui/enhanced-button"
-import { Badge } from "@/components/ui/badge"
-import { FinanceChart } from "@/components/charts/finance-chart"
-import { DollarSign, TrendingUp, TrendingDown, Wallet, Receipt, Plus } from "lucide-react"
+import { AdaptiveSidebar } from "@/components/layout/adaptive-sidebar"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, Receipt, Banknote, Target, AlertTriangle, ArrowUpRight, ArrowDownRight, PieChart, BarChart3 } from 'lucide-react'
 
 export default function FinancePage() {
   return (
-    <PageContainer>
-      <div className="space-y-6">
-        {/* 页面标题 */}
-        <div className="flex items-center justify-between">
+    <AdaptiveSidebar defaultModule="finance">
+      <div className="p-6 space-y-6 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 min-h-screen">
+        {/* 页面头部 */}
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">财务管理</h1>
-            <p className="text-slate-600 mt-1">管理企业财务收支和预算</p>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <DollarSign className="w-8 h-8 mr-3 text-emerald-600" />
+              财务概览
+            </h1>
+            <p className="text-gray-600 mt-2">企业财务数据总览和分析</p>
           </div>
-          <div className="flex gap-2">
-            <EnhancedButton variant="outline">
-              <Receipt className="w-4 h-4 mr-2" />
-              生成报表
-            </EnhancedButton>
-            <EnhancedButton className="bg-sky-600 hover:bg-sky-700">
-              <Plus className="w-4 h-4 mr-2" />
-              新增记录
-            </EnhancedButton>
+          <div className="flex space-x-3">
+            <Button
+              variant="outline"
+              className="border-l-4 border-l-emerald-500 transition-all duration-300 hover:scale-105 hover:shadow-xl bg-transparent group"
+            >
+              <BarChart3 className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+              财务报表
+            </Button>
+            <Button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white transition-all duration-300 hover:shadow-xl hover:scale-105 group">
+              <PieChart className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+              生成报告
+            </Button>
           </div>
         </div>
 
-        {/* 统计卡片 */}
+        {/* 财务概览卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <EnhancedCard className="border-l-4 border-l-sky-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">总收入</p>
-                <p className="text-2xl font-bold text-slate-800">¥2,456,789</p>
-                <p className="text-xs text-green-600 mt-1">↑ 12% 较上月</p>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">总收入</CardTitle>
+              <TrendingUp className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-700">¥2,847,392</div>
+              <div className="flex items-center text-xs text-emerald-600 mt-1">
+                <ArrowUpRight className="w-3 h-3 mr-1" />
+                <span>+12.5% 较上月</span>
               </div>
-              <div className="w-12 h-12 bg-sky-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-sky-600" />
-              </div>
-            </div>
-          </EnhancedCard>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard className="border-l-4 border-l-red-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">总支出</p>
-                <p className="text-2xl font-bold text-slate-800">¥1,234,567</p>
-                <p className="text-xs text-red-600 mt-1">↑ 8% 较上月</p>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">总支出</CardTitle>
+              <TrendingDown className="h-4 w-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-700">¥1,234,567</div>
+              <div className="flex items-center text-xs text-red-600 mt-1">
+                <ArrowUpRight className="w-3 h-3 mr-1" />
+                <span>+8.3% 较上月</span>
               </div>
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <TrendingDown className="w-6 h-6 text-red-600" />
-              </div>
-            </div>
-          </EnhancedCard>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard className="border-l-4 border-l-green-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">净利润</p>
-                <p className="text-2xl font-bold text-slate-800">¥1,222,222</p>
-                <p className="text-xs text-green-600 mt-1">↑ 15% 较上月</p>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">净利润</CardTitle>
+              <DollarSign className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-700">¥1,612,825</div>
+              <div className="flex items-center text-xs text-emerald-600 mt-1">
+                <ArrowUpRight className="w-3 h-3 mr-1" />
+                <span>+15.2% 较上月</span>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </EnhancedCard>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard className="border-l-4 border-l-purple-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">账户余额</p>
-                <p className="text-2xl font-bold text-slate-800">¥3,456,789</p>
-                <p className="text-xs text-purple-600 mt-1">可用资金</p>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">现金流</CardTitle>
+              <CreditCard className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-700">¥856,432</div>
+              <div className="flex items-center text-xs text-emerald-600 mt-1">
+                <ArrowUpRight className="w-3 h-3 mr-1" />
+                <span>+6.8% 较上月</span>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Wallet className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-          </EnhancedCard>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* 财务图表 */}
-        <EnhancedCard>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-800">收支趋势</h2>
-            <div className="flex gap-2">
-              <EnhancedButton variant="outline" size="sm">
-                月度
-              </EnhancedButton>
-              <EnhancedButton variant="outline" size="sm">
-                季度
-              </EnhancedButton>
-              <EnhancedButton variant="outline" size="sm">
-                年度
-              </EnhancedButton>
-            </div>
-          </div>
-          <FinanceChart />
-        </EnhancedCard>
+        {/* 财务模块快捷入口 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader>
+              <CardTitle className="flex items-center text-emerald-700">
+                <Target className="w-5 h-5 mr-2" />
+                预算管理
+              </CardTitle>
+              <CardDescription>预算规划和执行监控</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">本月预算执行</span>
+                  <span className="text-sm text-gray-600">85%</span>
+                </div>
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: "85%" }}
+                  ></div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full border-l-4 border-l-emerald-500 transition-all duration-300 hover:scale-105 group bg-transparent"
+                >
+                  <span className="group-hover:translate-x-1 transition-all duration-300">查看详情</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* 最近交易 */}
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader>
+              <CardTitle className="flex items-center text-emerald-700">
+                <Receipt className="w-5 h-5 mr-2" />
+                发票管理
+              </CardTitle>
+              <CardDescription>发票创建和跟踪管理</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="text-lg font-bold text-emerald-600">23</div>
+                    <div className="text-xs text-gray-600">待付款</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-green-600">156</div>
+                    <div className="text-xs text-gray-600">已付款</div>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full border-l-4 border-l-emerald-500 transition-all duration-300 hover:scale-105 group bg-transparent"
+                >
+                  <span className="group-hover:translate-x-1 transition-all duration-300">管理发票</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader>
+              <CardTitle className="flex items-center text-emerald-700">
+                <Banknote className="w-5 h-5 mr-2" />
+                支付管理
+              </CardTitle>
+              <CardDescription>支付交易和资金流管理</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="text-lg font-bold text-emerald-600">98.5%</div>
+                    <div className="text-xs text-gray-600">成功率</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-orange-600">3</div>
+                    <div className="text-xs text-gray-600">待处理</div>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full border-l-4 border-l-emerald-500 transition-all duration-300 hover:scale-105 group bg-transparent"
+                >
+                  <span className="group-hover:translate-x-1 transition-all duration-300">查看支付</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 财务趋势分析 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <EnhancedCard>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-800">最近收入</h2>
-              <EnhancedButton variant="outline" size="sm">
-                查看全部
-              </EnhancedButton>
-            </div>
-            <div className="space-y-3">
-              {[
-                { description: "产品销售收入", amount: "+¥45,600", date: "2024-01-15", type: "销售" },
-                { description: "服务费收入", amount: "+¥12,300", date: "2024-01-14", type: "服务" },
-                { description: "投资收益", amount: "+¥8,900", date: "2024-01-13", type: "投资" },
-                { description: "其他收入", amount: "+¥3,200", date: "2024-01-12", type: "其他" },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-800">{item.description}</p>
-                      <p className="text-sm text-slate-600">{item.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-green-600">{item.amount}</p>
-                    <Badge variant="outline" className="text-xs">
-                      {item.type}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </EnhancedCard>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-emerald-700">
+                <TrendingUp className="w-5 h-5 mr-2" />
+                收入趋势
+              </CardTitle>
+              <CardDescription>过去6个月收入变化趋势</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 bg-emerald-50 rounded-lg flex items-center justify-center">
+                <p className="text-emerald-600 font-medium">收入趋势图表区域</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-800">最近支出</h2>
-              <EnhancedButton variant="outline" size="sm">
-                查看全部
-              </EnhancedButton>
-            </div>
-            <div className="space-y-3">
-              {[
-                { description: "办公用品采购", amount: "-¥5,600", date: "2024-01-15", type: "采购" },
-                { description: "员工工资", amount: "-¥89,000", date: "2024-01-14", type: "人力" },
-                { description: "租金费用", amount: "-¥15,000", date: "2024-01-13", type: "租金" },
-                { description: "营销推广", amount: "-¥12,300", date: "2024-01-12", type: "营销" },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                      <TrendingDown className="w-4 h-4 text-red-600" />
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-emerald-700">
+                <PieChart className="w-5 h-5 mr-2" />
+                支出分析
+              </CardTitle>
+              <CardDescription>支出类别分布和占比</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>人力成本</span>
+                      <span>45%</span>
                     </div>
-                    <div>
-                      <p className="font-medium text-slate-800">{item.description}</p>
-                      <p className="text-sm text-slate-600">{item.date}</p>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "45%" }}
+                      ></div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium text-red-600">{item.amount}</p>
-                    <Badge variant="outline" className="text-xs">
-                      {item.type}
-                    </Badge>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>运营费用</span>
+                      <span>30%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "30%" }}
+                      ></div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </EnhancedCard>
-        </div>
-
-        {/* 预算概览 */}
-        <EnhancedCard>
-          <h2 className="text-lg font-semibold text-slate-800 mb-4">预算执行情况</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { category: "营销费用", budget: 50000, spent: 32000, percentage: 64 },
-              { category: "人力成本", budget: 200000, spent: 180000, percentage: 90 },
-              { category: "运营费用", budget: 80000, spent: 45000, percentage: 56 },
-            ].map((item, index) => (
-              <div key={index} className="p-4 border border-slate-200 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-slate-800">{item.category}</h3>
-                  <Badge
-                    variant={item.percentage > 80 ? "destructive" : item.percentage > 60 ? "secondary" : "default"}
-                  >
-                    {item.percentage}%
-                  </Badge>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">已用: ¥{item.spent.toLocaleString()}</span>
-                    <span className="text-slate-600">预算: ¥{item.budget.toLocaleString()}</span>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>营销推广</span>
+                      <span>15%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "15%" }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full ${
-                        item.percentage > 80 ? "bg-red-500" : item.percentage > 60 ? "bg-yellow-500" : "bg-green-500"
-                      }`}
-                      style={{ width: `${item.percentage}%` }}
-                    ></div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>其他费用</span>
+                      <span>10%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "10%" }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </EnhancedCard>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 财务预警 */}
+        <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="flex items-center text-emerald-700">
+              <AlertTriangle className="w-5 h-5 mr-2" />
+              财务预警
+            </CardTitle>
+            <CardDescription>需要关注的财务风险和异常</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg transition-all duration-300 hover:scale-105">
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-yellow-800">现金流预警</h4>
+                    <p className="text-sm text-yellow-600 mt-1">预计下月现金流可能出现紧张，建议提前准备资金</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg transition-all duration-300 hover:scale-105">
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-red-800">逾期应收款</h4>
+                    <p className="text-sm text-red-600 mt-1">有3笔应收款已逾期超过30天，总金额¥156,000</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg transition-all duration-300 hover:scale-105">
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-blue-800">预算超支提醒</h4>
+                    <p className="text-sm text-blue-600 mt-1">营销费用本月已超出预算15%，建议控制支出</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      <FloatingNavButtons />
-    </PageContainer>
+    </AdaptiveSidebar>
   )
 }

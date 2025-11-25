@@ -5,6 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Users, Shield, Key, UserPlus, Edit, Trash2, Eye, Lock } from "lucide-react"
 
 interface User {
@@ -169,35 +182,150 @@ export function PermissionManagement() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">权限管理</h1>
-          <p className="text-gray-600 mt-1">用户角色与权限控制系统</p>
+          <h1 className="text-3xl font-bold">权限管理</h1>
+          <p className="text-muted-foreground">用户角色与权限控制系统</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm">
-            <UserPlus className="w-4 h-4 mr-2" />
-            添加用户
-          </Button>
-          <Button className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700">
-            <Shield className="w-4 h-4 mr-2" />
-            创建角色
-          </Button>
+        <div className="flex space-x-2">
+          <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white border-0"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                添加用户
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>添加新用户</DialogTitle>
+                <DialogDescription>创建新的用户账户并分配角色</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">姓名</Label>
+                  <Input id="name" placeholder="输入用户姓名" />
+                </div>
+                <div>
+                  <Label htmlFor="email">邮箱</Label>
+                  <Input id="email" type="email" placeholder="输入邮箱地址" />
+                </div>
+                <div>
+                  <Label htmlFor="role">角色</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择用户角色" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="department">部门</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择所属部门" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sales">销售部</SelectItem>
+                      <SelectItem value="service">客服部</SelectItem>
+                      <SelectItem value="tech">技术部</SelectItem>
+                      <SelectItem value="finance">财务部</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsCreateUserDialogOpen(false)}>
+                    取消
+                  </Button>
+                  <Button
+                    onClick={() => setIsCreateUserDialogOpen(false)}
+                    className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
+                  >
+                    创建用户
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={isCreateRoleDialogOpen} onOpenChange={setIsCreateRoleDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white">
+                <Shield className="w-4 h-4 mr-2" />
+                创建角色
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>创建新角色</DialogTitle>
+                <DialogDescription>定义角色权限和描述</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="roleName">角色名称</Label>
+                  <Input id="roleName" placeholder="输入角色名称" />
+                </div>
+                <div>
+                  <Label htmlFor="roleDescription">角色描述</Label>
+                  <Textarea id="roleDescription" placeholder="描述角色职责和权限范围" />
+                </div>
+                <div>
+                  <Label>权限设置</Label>
+                  <div className="space-y-4 mt-2">
+                    {["系统", "业务", "报表", "数据"].map((category) => (
+                      <div
+                        key={category}
+                        className="border border-sky-200 rounded-xl p-4 bg-white/80 backdrop-blur-sm shadow-sm"
+                      >
+                        <h4 className="font-medium mb-3">{category}权限</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          {getPermissionsByCategory(category).map((permission) => (
+                            <div key={permission.id} className="flex items-center space-x-2">
+                              <Switch id={permission.id} />
+                              <Label htmlFor={permission.id} className="text-sm">
+                                {permission.name}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsCreateRoleDialogOpen(false)}>
+                    取消
+                  </Button>
+                  <Button
+                    onClick={() => setIsCreateRoleDialogOpen(false)}
+                    className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
+                  >
+                    创建角色
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
       {/* 权限统计 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-indigo-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">总用户数</p>
-                <p className="text-2xl font-bold text-indigo-600">{users.length}</p>
-                <p className="text-xs text-gray-500 mt-1">活跃: {users.filter((u) => u.status === "active").length}</p>
-              </div>
-              <Users className="w-8 h-8 text-indigo-400" />
-            </div>
+        <Card className="bg-white/80 backdrop-blur-sm border border-sky-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">总用户数</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{users.length}</div>
+            <p className="text-xs text-muted-foreground">活跃: {users.filter((u) => u.status === "active").length}</p>
           </CardContent>
         </Card>
 

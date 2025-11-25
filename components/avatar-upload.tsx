@@ -4,246 +4,218 @@ import type React from "react"
 
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
-import { Camera, Upload, X, Check, RotateCcw, ZoomIn, ZoomOut } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Upload, Camera, User, X, Save, RotateCcw } from "lucide-react"
 
 interface AvatarUploadProps {
   currentAvatar?: string
-  onAvatarChange: (newAvatar: string) => void
-  size?: "sm" | "md" | "lg"
-  fallbackText?: string
+  userName: string
+  onAvatarChange: (avatarUrl: string) => void
+  size?: "sm" | "md" | "lg" | "xl"
 }
 
-export function AvatarUpload({ currentAvatar, onAvatarChange, size = "md", fallbackText = "头像" }: AvatarUploadProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string>("")
-  const [uploadProgress, setUploadProgress] = useState(0)
+export function AvatarUpload({ currentAvatar, userName, onAvatarChange, size = "lg" }: AvatarUploadProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(currentAvatar || null)
   const [isUploading, setIsUploading] = useState(false)
-  const [cropSettings, setCropSettings] = useState({
-    zoom: 1,
-    rotation: 0,
-  })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const sizeClasses = {
-    sm: "w-12 h-12",
-    md: "w-20 h-20",
-    lg: "w-24 h-24",
+    sm: "w-8 h-8",
+    md: "w-12 h-12",
+    lg: "w-16 h-16",
+    xl: "w-24 h-24",
   }
 
-  const buttonSizeClasses = {
-    sm: "w-6 h-6",
-    md: "w-8 h-8",
-    lg: "w-10 h-10",
+  const iconSizes = {
+    sm: "w-3 h-3",
+    md: "w-4 h-4",
+    lg: "w-6 h-6",
+    xl: "w-8 h-8",
   }
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (!file) return
+    if (file) {
+      // 验证文件类型
+      if (!file.type.startsWith("image/")) {
+        alert("请选择图片文件")
+        return
+      }
 
-    // 验证文件类型
-    if (!file.type.startsWith("image/")) {
-      toast({
-        title: "文件类型错误",
-        description: "请选择图片文件",
-        variant: "destructive",
-      })
-      return
+      // 验证文件大小 (最大 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("图片大小不能超过 5MB")
+        return
+      }
+
+      setIsUploading(true)
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        setPreviewAvatar(result)
+        setIsUploading(false)
+      }
+      reader.onerror = () => {
+        alert("文件读取失败，请重试")
+        setIsUploading(false)
+      }
+      reader.readAsDataURL(file)
     }
-
-    // 验证文件大小 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "文件过大",
-        description: "请选择小于5MB的图片",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setSelectedFile(file)
-    const url = URL.createObjectURL(file)
-    setPreviewUrl(url)
-    setIsDialogOpen(true)
   }
 
-  const handleUpload = async () => {
-    if (!selectedFile) return
+  const handleSave = () => {
+    if (previewAvatar) {
+      onAvatarChange(previewAvatar)
+      setIsOpen(false)
 
-    setIsUploading(true)
-    setUploadProgress(0)
-
-    try {
-      // 模拟上传进度
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval)
-            return 90
-          }
-          return prev + 10
+      // 显示成功提示
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("头像更新成功", {
+          body: "您的头像已成功更新",
+          icon: previewAvatar,
         })
-      }, 200)
-
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      clearInterval(progressInterval)
-      setUploadProgress(100)
-
-      // 创建新的头像URL (实际项目中这里会是服务器返回的URL)
-      const newAvatarUrl = URL.createObjectURL(selectedFile)
-      onAvatarChange(newAvatarUrl)
-
-      toast({
-        title: "上传成功",
-        description: "头像已更新",
-      })
-
-      setTimeout(() => {
-        setIsDialogOpen(false)
-        resetState()
-      }, 500)
-    } catch (error) {
-      toast({
-        title: "上传失败",
-        description: "请稍后重试",
-        variant: "destructive",
-      })
-    } finally {
-      setIsUploading(false)
+      }
     }
   }
 
-  const resetState = () => {
-    setSelectedFile(null)
-    setPreviewUrl("")
-    setUploadProgress(0)
-    setIsUploading(false)
-    setCropSettings({ zoom: 1, rotation: 0 })
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+  const handleReset = () => {
+    setPreviewAvatar(null)
+    onAvatarChange("")
+  }
+
+  const generateDefaultAvatar = () => {
+    // 生成默认头像（基于用户名首字母）
+    const canvas = document.createElement("canvas")
+    canvas.width = 200
+    canvas.height = 200
+    const ctx = canvas.getContext("2d")
+
+    if (ctx) {
+      // 背景渐变
+      const gradient = ctx.createLinearGradient(0, 0, 200, 200)
+      gradient.addColorStop(0, "#667eea")
+      gradient.addColorStop(1, "#764ba2")
+      ctx.fillStyle = gradient
+      ctx.fillRect(0, 0, 200, 200)
+
+      // 文字
+      ctx.fillStyle = "white"
+      ctx.font = "bold 80px Arial"
+      ctx.textAlign = "center"
+      ctx.textBaseline = "middle"
+      ctx.fillText(userName.charAt(0).toUpperCase(), 100, 100)
+
+      const defaultAvatar = canvas.toDataURL()
+      setPreviewAvatar(defaultAvatar)
     }
   }
 
-  const handleCancel = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
+  const renderAvatar = () => {
+    if (currentAvatar) {
+      return (
+        <img
+          src={currentAvatar || "/placeholder.svg"}
+          alt={userName}
+          className={`${sizeClasses[size]} rounded-full object-cover`}
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            target.style.display = "none"
+            target.nextElementSibling?.classList.remove("hidden")
+          }}
+        />
+      )
     }
-    resetState()
-    setIsDialogOpen(false)
+
+    return (
+      <div
+        className={`${sizeClasses[size]} bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center`}
+      >
+        <span className="text-white font-semibold text-sm">{userName.charAt(0).toUpperCase()}</span>
+      </div>
+    )
   }
 
   return (
     <>
-      <div className="relative inline-block">
-        <Avatar className={sizeClasses[size]}>
-          <AvatarImage src={currentAvatar || "/placeholder.svg"} alt="头像" />
-          <AvatarFallback className="bg-gradient-to-br from-sky-400 to-blue-500 text-white">
-            {fallbackText}
-          </AvatarFallback>
-        </Avatar>
-        <Button
-          size="sm"
-          variant="outline"
-          className={`absolute -bottom-1 -right-1 ${buttonSizeClasses[size]} rounded-full p-0 bg-white hover:bg-sky-50 border-sky-200`}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Camera className="w-3 h-3 text-sky-600" />
-        </Button>
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+      <div className="relative group cursor-pointer" onClick={() => setIsOpen(true)}>
+        {renderAvatar()}
+        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <Camera className={`${iconSizes[size]} text-white`} />
+        </div>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Upload className="w-5 h-5 text-sky-600" />
-              上传头像
+            <DialogTitle className="flex items-center">
+              <User className="w-5 h-5 mr-2 text-sky-600" />
+              更换头像
             </DialogTitle>
-            <DialogDescription>调整您的头像图片，支持JPG、PNG格式，最大5MB</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {previewUrl && (
-              <div className="flex flex-col items-center space-y-4">
-                <div className="relative">
-                  <Avatar className="w-32 h-32">
-                    <AvatarImage
-                      src={previewUrl || "/placeholder.svg"}
-                      alt="预览"
-                      style={{
-                        transform: `scale(${cropSettings.zoom}) rotate(${cropSettings.rotation}deg)`,
-                      }}
-                    />
-                    <AvatarFallback>预览</AvatarFallback>
-                  </Avatar>
-                </div>
-
-                {/* 调整控件 */}
-                <div className="flex items-center space-x-2 w-full">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCropSettings((prev) => ({ ...prev, zoom: Math.max(0.5, prev.zoom - 0.1) }))}
-                  >
-                    <ZoomOut className="w-4 h-4" />
-                  </Button>
-                  <div className="flex-1 text-center text-sm text-slate-600">
-                    缩放: {Math.round(cropSettings.zoom * 100)}%
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCropSettings((prev) => ({ ...prev, zoom: Math.min(2, prev.zoom + 0.1) }))}
-                  >
-                    <ZoomIn className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCropSettings((prev) => ({ ...prev, rotation: (prev.rotation + 90) % 360 }))}
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* 上传进度 */}
-                {isUploading && (
-                  <div className="w-full space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">上传进度</span>
-                      <span className="font-medium text-sky-600">{uploadProgress}%</span>
-                    </div>
-                    <Progress value={uploadProgress} className="h-2" />
+          <div className="space-y-6 py-4">
+            {/* 头像预览 */}
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                {previewAvatar ? (
+                  <img
+                    src={previewAvatar || "/placeholder.svg"}
+                    alt="头像预览"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center border-4 border-gray-200">
+                    <span className="text-white font-semibold text-xl">{userName.charAt(0).toUpperCase()}</span>
                   </div>
                 )}
               </div>
-            )}
+              <p className="text-sm text-gray-500 text-center">点击下方按钮更换头像</p>
+            </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={handleCancel} disabled={isUploading}>
-                <X className="w-4 h-4 mr-2" />
-                取消
-              </Button>
+            {/* 操作按钮 */}
+            <div className="space-y-3">
               <Button
-                onClick={handleUpload}
-                disabled={!selectedFile || isUploading}
-                className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700"
+                variant="outline"
+                className="w-full bg-transparent"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
               >
-                {isUploading ? (
-                  <>上传中...</>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    确认上传
-                  </>
-                )}
+                <Upload className="w-4 h-4 mr-2" />
+                {isUploading ? "上传中..." : "上传图片"}
               </Button>
+
+              <Button variant="outline" className="w-full bg-transparent" onClick={generateDefaultAvatar}>
+                <User className="w-4 h-4 mr-2" />
+                生成默认头像
+              </Button>
+
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+
+              <p className="text-xs text-gray-500 text-center">支持 JPG、PNG、GIF 格式，文件大小不超过 5MB</p>
+            </div>
+
+            {/* 操作按钮 */}
+            <div className="flex justify-between pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="text-red-600 hover:text-red-700 bg-transparent"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                重置
+              </Button>
+
+              <div className="space-x-2">
+                <Button variant="outline" onClick={() => setIsOpen(false)}>
+                  <X className="w-4 h-4 mr-2" />
+                  取消
+                </Button>
+                <Button onClick={handleSave} className="bg-sky-600 hover:bg-sky-700" disabled={!previewAvatar}>
+                  <Save className="w-4 h-4 mr-2" />
+                  保存
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>

@@ -1,181 +1,250 @@
 "use client"
 
-import { PageContainer } from "@/components/layout/page-container"
-import { FloatingNavButtons } from "@/components/ui/floating-nav-buttons"
-import { EnhancedCard } from "@/components/ui/enhanced-card"
-import { EnhancedButton } from "@/components/ui/enhanced-button"
-import { SalesChart } from "@/components/charts/sales-chart"
-import { FinanceChart } from "@/components/charts/finance-chart"
-import { PerformanceChart } from "@/components/charts/performance-chart"
-import { BarChart3, TrendingUp, Download, Eye, Users, DollarSign } from "lucide-react"
+import { AdaptiveSidebar } from "@/components/layout/adaptive-sidebar"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { BarChart3, TrendingUp, Users, DollarSign, Target, Activity, PieChart, LineChart, Download, RefreshCw, Calendar, Filter } from 'lucide-react'
 
 export default function AnalyticsPage() {
   return (
-    <PageContainer>
-      <div className="space-y-6">
-        {/* 页面标题 */}
-        <div className="flex items-center justify-between">
+    <AdaptiveSidebar defaultModule="analytics">
+      <div className="p-6 space-y-6 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 min-h-screen">
+        {/* 页面头部 */}
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">数据分析</h1>
-            <p className="text-slate-600 mt-1">深入了解业务数据和趋势</p>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <BarChart3 className="w-8 h-8 mr-3 text-emerald-600" />
+              数据分析
+            </h1>
+            <p className="text-gray-600 mt-2">企业数据深度分析和洞察</p>
           </div>
-          <div className="flex gap-2">
-            <EnhancedButton variant="outline">
-              <Eye className="w-4 h-4 mr-2" />
-              实时监控
-            </EnhancedButton>
-            <EnhancedButton className="bg-sky-600 hover:bg-sky-700">
-              <Download className="w-4 h-4 mr-2" />
+          <div className="flex space-x-3">
+            <Select>
+              <SelectTrigger className="w-32 border-l-4 border-l-emerald-500">
+                <Calendar className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="本月" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">今日</SelectItem>
+                <SelectItem value="week">本周</SelectItem>
+                <SelectItem value="month">本月</SelectItem>
+                <SelectItem value="quarter">本季度</SelectItem>
+                <SelectItem value="year">本年</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              className="border-l-4 border-l-emerald-500 transition-all duration-300 hover:scale-105 hover:shadow-xl bg-transparent group"
+            >
+              <RefreshCw className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+              刷新数据
+            </Button>
+            <Button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white transition-all duration-300 hover:shadow-xl hover:scale-105 group">
+              <Download className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
               导出报告
-            </EnhancedButton>
+            </Button>
           </div>
         </div>
 
-        {/* 统计卡片 */}
+        {/* 核心指标 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <EnhancedCard className="border-l-4 border-l-sky-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">总访问量</p>
-                <p className="text-2xl font-bold text-slate-800">24,567</p>
-                <p className="text-xs text-green-600 mt-1">↑ 15% 较上月</p>
-              </div>
-              <div className="w-12 h-12 bg-sky-100 rounded-lg flex items-center justify-center">
-                <Eye className="w-6 h-6 text-sky-600" />
-              </div>
-            </div>
-          </EnhancedCard>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">总收入</CardTitle>
+              <DollarSign className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-700">¥2,847,392</div>
+              <p className="text-xs text-emerald-600">+12.5% 较上月</p>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard className="border-l-4 border-l-green-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">活跃用户</p>
-                <p className="text-2xl font-bold text-slate-800">8,945</p>
-                <p className="text-xs text-green-600 mt-1">↑ 8% 较上月</p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </EnhancedCard>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">活跃用户</CardTitle>
+              <Users className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-700">1,247</div>
+              <p className="text-xs text-emerald-600">+8.2% 较上月</p>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard className="border-l-4 border-l-yellow-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">转化率</p>
-                <p className="text-2xl font-bold text-slate-800">12.5%</p>
-                <p className="text-xs text-yellow-600 mt-1">↑ 2.3% 较上月</p>
-              </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-yellow-600" />
-              </div>
-            </div>
-          </EnhancedCard>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">转化率</CardTitle>
+              <Target className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-700">12.4%</div>
+              <p className="text-xs text-emerald-600">+2.1% 较上月</p>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard className="border-l-4 border-l-purple-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600">总收入</p>
-                <p className="text-2xl font-bold text-slate-800">¥156.8K</p>
-                <p className="text-xs text-purple-600 mt-1">↑ 18% 较上月</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-          </EnhancedCard>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">活跃度</CardTitle>
+              <Activity className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-700">85.6%</div>
+              <p className="text-xs text-emerald-600">+3.4% 较上月</p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* 图表区域 */}
+        {/* 图表分析 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <EnhancedCard>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-800">销售趋势</h2>
-              <EnhancedButton variant="outline" size="sm">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                详细分析
-              </EnhancedButton>
-            </div>
-            <SalesChart />
-          </EnhancedCard>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-emerald-700">
+                <LineChart className="w-5 h-5 mr-2" />
+                收入趋势分析
+              </CardTitle>
+              <CardDescription>过去12个月收入变化趋势</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80 bg-emerald-50 rounded-lg flex items-center justify-center">
+                <p className="text-emerald-600 font-medium">收入趋势图表区域</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-800">财务概览</h2>
-              <EnhancedButton variant="outline" size="sm">
-                <DollarSign className="w-4 h-4 mr-2" />
-                财务报表
-              </EnhancedButton>
-            </div>
-            <FinanceChart />
-          </EnhancedCard>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-emerald-700">
+                <PieChart className="w-5 h-5 mr-2" />
+                用户行为分析
+              </CardTitle>
+              <CardDescription>用户活动和行为模式分析</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>页面浏览</span>
+                      <span>45%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "45%" }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>功能使用</span>
+                      <span>30%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "30%" }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>数据导出</span>
+                      <span>15%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "15%" }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>其他操作</span>
+                      <span>10%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: "10%" }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* 性能分析 */}
-        <EnhancedCard>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-800">性能分析</h2>
-            <div className="flex gap-2">
-              <EnhancedButton variant="outline" size="sm">
-                日
-              </EnhancedButton>
-              <EnhancedButton variant="outline" size="sm">
-                周
-              </EnhancedButton>
-              <EnhancedButton variant="outline" size="sm">
-                月
-              </EnhancedButton>
-            </div>
-          </div>
-          <PerformanceChart />
-        </EnhancedCard>
-
-        {/* 数据洞察 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <EnhancedCard>
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">热门页面</h3>
-            <div className="space-y-3">
-              {[
-                { page: "/dashboard", views: "12,345", percentage: 85 },
-                { page: "/customers", views: "8,967", percentage: 65 },
-                { page: "/tasks", views: "6,543", percentage: 45 },
-                { page: "/analytics", views: "4,321", percentage: 30 },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-slate-800">{item.page}</p>
-                    <p className="text-sm text-slate-600">{item.views} 次访问</p>
-                  </div>
-                  <div className="w-20 bg-slate-200 rounded-full h-2">
-                    <div className="bg-sky-500 h-2 rounded-full" style={{ width: `${item.percentage}%` }}></div>
-                  </div>
+        {/* 详细分析模块 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="text-emerald-700">销售分析</CardTitle>
+              <CardDescription>销售数据深度分析</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600">¥2,847,392</div>
+                  <div className="text-sm text-gray-600">本月销售额</div>
                 </div>
-              ))}
-            </div>
-          </EnhancedCard>
+                <Button
+                  variant="outline"
+                  className="w-full border-l-4 border-l-emerald-500 transition-all duration-300 hover:scale-105 group bg-transparent"
+                >
+                  <TrendingUp className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+                  查看详情
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-          <EnhancedCard>
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">用户来源</h3>
-            <div className="space-y-3">
-              {[
-                { source: "直接访问", users: "5,234", color: "bg-sky-500" },
-                { source: "搜索引擎", users: "3,456", color: "bg-green-500" },
-                { source: "社交媒体", users: "2,345", color: "bg-yellow-500" },
-                { source: "邮件营销", users: "1,234", color: "bg-purple-500" },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                    <span className="text-slate-800">{item.source}</span>
-                  </div>
-                  <span className="font-medium text-slate-800">{item.users}</span>
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="text-emerald-700">客户分析</CardTitle>
+              <CardDescription>客户行为和偏好分析</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600">1,247</div>
+                  <div className="text-sm text-gray-600">活跃客户数</div>
                 </div>
-              ))}
-            </div>
-          </EnhancedCard>
+                <Button
+                  variant="outline"
+                  className="w-full border-l-4 border-l-emerald-500 transition-all duration-300 hover:scale-105 group bg-transparent"
+                >
+                  <Users className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+                  查看详情
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-emerald-500 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="text-emerald-700">性能分析</CardTitle>
+              <CardDescription>系统性能和效率分析</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600">85.6%</div>
+                  <div className="text-sm text-gray-600">系统效率</div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full border-l-4 border-l-emerald-500 transition-all duration-300 hover:scale-105 group bg-transparent"
+                >
+                  <Activity className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-all duration-300" />
+                  查看详情
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-      <FloatingNavButtons />
-    </PageContainer>
+    </AdaptiveSidebar>
   )
 }

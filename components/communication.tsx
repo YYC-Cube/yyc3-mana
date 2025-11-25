@@ -1,197 +1,434 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MessageCircle, Send, Phone, Video, Users, Bell, Search, Plus, Paperclip, Smile } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  MessageSquare,
+  Video,
+  Phone,
+  Users,
+  Send,
+  Paperclip,
+  Smile,
+  Search,
+  Plus,
+  Settings,
+  Calendar,
+  FileText,
+  Mic,
+  Share2,
+  MoreHorizontal,
+  Clock,
+  CheckCheck,
+} from "lucide-react"
+
+interface Message {
+  id: string
+  senderId: string
+  senderName: string
+  senderAvatar: string
+  content: string
+  timestamp: Date
+  type: "text" | "file" | "image" | "voice"
+  isRead: boolean
+  reactions?: { emoji: string; users: string[] }[]
+}
+
+interface ChatRoom {
+  id: string
+  name: string
+  type: "direct" | "group" | "channel"
+  avatar: string
+  lastMessage: string
+  lastMessageTime: Date
+  unreadCount: number
+  isOnline: boolean
+  members: string[]
+  description?: string
+}
+
+interface OnlineUser {
+  id: string
+  name: string
+  avatar: string
+  status: "online" | "away" | "busy" | "offline"
+  department: string
+  role: string
+}
 
 export function Communication() {
-  const [selectedChat, setSelectedChat] = useState("1")
+  const [activeChat, setActiveChat] = useState<string | null>(null)
   const [message, setMessage] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isRecording, setIsRecording] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const chatList = [
+  // 模拟聊天室数据
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([
     {
       id: "1",
+      name: "张经理",
+      type: "direct",
+      avatar: "",
+      lastMessage: "明天的会议准备好了吗？",
+      lastMessageTime: new Date(Date.now() - 5 * 60 * 1000),
+      unreadCount: 2,
+      isOnline: true,
+      members: ["user1", "user2"],
+    },
+    {
+      id: "2",
       name: "产品开发团队",
       type: "group",
-      lastMessage: "新产品原型设计已完成，请大家查看",
-      time: "10:30",
-      unread: 3,
-      avatar: "/placeholder.svg?height=40&width=40",
+      avatar: "",
+      lastMessage: "新功能的原型设计已完成",
+      lastMessageTime: new Date(Date.now() - 15 * 60 * 1000),
+      unreadCount: 5,
+      isOnline: true,
+      members: ["user1", "user2", "user3", "user4"],
+      description: "产品开发相关讨论",
     },
     {
-      id: "2",
+      id: "3",
+      name: "李总监",
+      type: "direct",
+      avatar: "",
+      lastMessage: "项目进度如何？",
+      lastMessageTime: new Date(Date.now() - 30 * 60 * 1000),
+      unreadCount: 0,
+      isOnline: false,
+      members: ["user1", "user3"],
+    },
+    {
+      id: "4",
+      name: "全体员工",
+      type: "channel",
+      avatar: "",
+      lastMessage: "公司年会通知已发布",
+      lastMessageTime: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      unreadCount: 1,
+      isOnline: true,
+      members: ["user1", "user2", "user3", "user4", "user5"],
+      description: "公司重要通知和公告",
+    },
+  ])
+
+  // 模拟消息数据
+  const [messages, setMessages] = useState<Record<string, Message[]>>({
+    "1": [
+      {
+        id: "m1",
+        senderId: "user2",
+        senderName: "张经理",
+        senderAvatar: "",
+        content: "你好，关于明天的项目评审会议，你准备好了吗？",
+        timestamp: new Date(Date.now() - 10 * 60 * 1000),
+        type: "text",
+        isRead: true,
+      },
+      {
+        id: "m2",
+        senderId: "user1",
+        senderName: "我",
+        senderAvatar: "",
+        content: "已经准备好了，PPT和相关文档都整理完毕。",
+        timestamp: new Date(Date.now() - 8 * 60 * 1000),
+        type: "text",
+        isRead: true,
+      },
+      {
+        id: "m3",
+        senderId: "user2",
+        senderName: "张经理",
+        senderAvatar: "",
+        content: "很好，记得提前10分钟到会议室。",
+        timestamp: new Date(Date.now() - 5 * 60 * 1000),
+        type: "text",
+        isRead: false,
+      },
+    ],
+    "2": [
+      {
+        id: "m4",
+        senderId: "user3",
+        senderName: "王设计师",
+        senderAvatar: "",
+        content: "新功能的原型设计已经完成，大家可以查看一下。",
+        timestamp: new Date(Date.now() - 20 * 60 * 1000),
+        type: "text",
+        isRead: true,
+      },
+      {
+        id: "m5",
+        senderId: "user4",
+        senderName: "李开发",
+        senderAvatar: "",
+        content: "看起来不错，我们什么时候开始开发？",
+        timestamp: new Date(Date.now() - 15 * 60 * 1000),
+        type: "text",
+        isRead: true,
+      },
+    ],
+  })
+
+  // 在线用户数据
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([
+    {
+      id: "user1",
       name: "张经理",
-      type: "private",
-      lastMessage: "明天的会议时间需要调整一下",
-      time: "09:45",
-      unread: 1,
-      avatar: "/placeholder.svg?height=40&width=40",
+      avatar: "",
+      status: "online",
+      department: "销售部",
+      role: "部门经理",
     },
     {
-      id: "3",
-      name: "销售部门群",
-      type: "group",
-      lastMessage: "本月销售目标完成情况汇报",
-      time: "昨天",
-      unread: 0,
-      avatar: "/placeholder.svg?height=40&width=40",
+      id: "user2",
+      name: "李总监",
+      avatar: "",
+      status: "busy",
+      department: "技术部",
+      role: "技术总监",
     },
     {
-      id: "4",
-      name: "李工程师",
-      type: "private",
-      lastMessage: "设备维护报告已发送",
-      time: "2天前",
-      unread: 0,
-      avatar: "/placeholder.svg?height=40&width=40",
+      id: "user3",
+      name: "王设计师",
+      avatar: "",
+      status: "online",
+      department: "设计部",
+      role: "UI设计师",
     },
-  ]
+    {
+      id: "user4",
+      name: "陈开发",
+      avatar: "",
+      status: "away",
+      department: "技术部",
+      role: "前端开发",
+    },
+    {
+      id: "user5",
+      name: "赵产品",
+      avatar: "",
+      status: "online",
+      department: "产品部",
+      role: "产品经理",
+    },
+  ])
 
-  const messages = [
-    {
-      id: "1",
-      sender: "张经理",
-      content: "大家好，关于新产品的开发进度，我们需要加快推进",
-      time: "09:30",
-      isOwn: false,
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    {
-      id: "2",
-      sender: "我",
-      content: "好的，我这边的设计稿已经完成了，稍后发给大家",
-      time: "09:32",
-      isOwn: true,
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    {
-      id: "3",
-      sender: "李工程师",
-      content: "技术��案我已经评估过了，可行性很高",
-      time: "09:35",
-      isOwn: false,
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    {
-      id: "4",
-      sender: "我",
-      content: "那我们明天开个会详细讨论一下具体的实施计划",
-      time: "09:38",
-      isOwn: true,
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-  ]
-
-  const announcements = [
+  // 公告数据
+  const [announcements, setAnnouncements] = useState([
     {
       id: "1",
       title: "公司年会通知",
-      content: "2025年公司年会将于12月28日举行，请各部门做好准备工作",
-      time: "2025-06-19 14:30",
+      content: "公司年会将于下月15日举行，请大家提前安排时间。",
+      author: "人事部",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
       priority: "high",
     },
     {
       id: "2",
       title: "系统维护通知",
-      content: "本周六晚上22:00-24:00进行系统维护，期间可能影响正常使用",
-      time: "2025-06-18 16:20",
+      content: "系统将于本周六晚上进行维护升级，预计2小时。",
+      author: "技术部",
+      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
       priority: "medium",
     },
     {
       id: "3",
       title: "新员工入职欢迎",
-      content: "欢迎市场部新同事王小明加入我们的团队",
-      time: "2025-06-17 10:15",
+      content: "欢迎新同事加入我们的团队！",
+      author: "人事部",
+      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
       priority: "low",
     },
-  ]
+  ])
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      console.log("发送消息:", message)
-      setMessage("")
+  // 发送消息
+  const sendMessage = () => {
+    if (!message.trim() || !activeChat) return
+
+    const newMessage: Message = {
+      id: `m${Date.now()}`,
+      senderId: "user1",
+      senderName: "我",
+      senderAvatar: "",
+      content: message,
+      timestamp: new Date(),
+      type: "text",
+      isRead: true,
+    }
+
+    setMessages((prev) => ({
+      ...prev,
+      [activeChat]: [...(prev[activeChat] || []), newMessage],
+    }))
+
+    // 更新聊天室最后消息
+    setChatRooms((prev) =>
+      prev.map((room) =>
+        room.id === activeChat
+          ? {
+              ...room,
+              lastMessage: message,
+              lastMessageTime: new Date(),
+            }
+          : room,
+      ),
+    )
+
+    setMessage("")
+    scrollToBottom()
+  }
+
+  // 滚动到底部
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  // 获取状态颜色
+  const getStatusColor = (status: OnlineUser["status"]) => {
+    switch (status) {
+      case "online":
+        return "bg-green-500"
+      case "away":
+        return "bg-yellow-500"
+      case "busy":
+        return "bg-red-500"
+      default:
+        return "bg-gray-400"
     }
   }
 
+  // 获取状态文本
+  const getStatusText = (status: OnlineUser["status"]) => {
+    switch (status) {
+      case "online":
+        return "在线"
+      case "away":
+        return "离开"
+      case "busy":
+        return "忙碌"
+      default:
+        return "离线"
+    }
+  }
+
+  // 格式化时间
+  const formatTime = (date: Date) => {
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const minutes = Math.floor(diff / (1000 * 60))
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+    if (minutes < 1) return "刚刚"
+    if (minutes < 60) return `${minutes}分钟前`
+    if (hours < 24) return `${hours}小时前`
+    if (days < 7) return `${days}天前`
+    return date.toLocaleDateString("zh-CN")
+  }
+
+  // 过滤聊天室
+  const filteredChatRooms = chatRooms.filter((room) => room.name.toLowerCase().includes(searchQuery.toLowerCase()))
+
+  // 当前聊天室
+  const currentChat = chatRooms.find((room) => room.id === activeChat)
+  const currentMessages = activeChat ? messages[activeChat] || [] : []
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [currentMessages])
+
   return (
-    <div className="p-6 space-y-6">
-      {/* 页面头部 - 统一风格 */}
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+      {/* 页面标题 */}
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">企业沟通中心</h1>
-          <p className="text-gray-600 mt-1">高效的内部沟通协作平台</p>
+          <h1 className="text-3xl font-bold text-slate-800 flex items-center">
+            <MessageSquare className="w-8 h-8 mr-3 text-blue-600" />
+            沟通协作
+          </h1>
+          <p className="text-slate-600 mt-1">团队协作，高效沟通</p>
         </div>
         <div className="flex items-center space-x-3">
-          <Button
-            variant="outline"
-            className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white border-0"
-          >
+          <Button variant="outline" size="sm">
             <Video className="w-4 h-4 mr-2" />
-            视频会议
+            发起会议
           </Button>
-          <Button className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white">
+          <Button variant="outline" size="sm">
             <Plus className="w-4 h-4 mr-2" />
             创建群组
+          </Button>
+          <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
+            <Users className="w-4 h-4 mr-2" />
+            邀请成员
           </Button>
         </div>
       </div>
 
-      {/* 统计卡片区域 - 统一风格 */}
+      {/* 统计概览 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-blue-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">未读消息</p>
-                <p className="text-3xl font-bold text-blue-600">12</p>
-                <p className="text-xs text-gray-500 mt-1">需要回复的消息</p>
-              </div>
-              <MessageCircle className="w-8 h-8 text-blue-400" />
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center">
+              <MessageSquare className="w-5 h-5 mr-2 text-blue-600" />
+              未读消息
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {chatRooms.reduce((sum, room) => sum + room.unreadCount, 0)}
             </div>
+            <p className="text-sm text-muted-foreground">需要处理的消息</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-green-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">活跃群组</p>
-                <p className="text-3xl font-bold text-green-600">8</p>
-                <p className="text-xs text-gray-500 mt-1">参与的工作群组</p>
-              </div>
-              <Users className="w-8 h-8 text-green-400" />
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center">
+              <Users className="w-5 h-5 mr-2 text-green-600" />
+              在线用户
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {onlineUsers.filter((user) => user.status === "online").length}
             </div>
+            <p className="text-sm text-muted-foreground">当前在线人数</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-purple-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">在线同事</p>
-                <p className="text-3xl font-bold text-purple-600">45</p>
-                <p className="text-xs text-gray-500 mt-1">当前在线人数</p>
-              </div>
-              <Users className="w-8 h-8 text-purple-400" />
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center">
+              <MessageSquare className="w-5 h-5 mr-2 text-purple-600" />
+              活跃群组
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">
+              {chatRooms.filter((room) => room.type === "group").length}
             </div>
+            <p className="text-sm text-muted-foreground">参与的群组数量</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-orange-400 hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">今日消息</p>
-                <p className="text-3xl font-bold text-orange-600">156</p>
-                <p className="text-xs text-gray-500 mt-1">今日收发消息数</p>
-              </div>
-              <Bell className="w-8 h-8 text-orange-400" />
-            </div>
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center">
+              <Clock className="w-5 h-5 mr-2 text-orange-600" />
+              今日消息
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">156</div>
+            <p className="text-sm text-muted-foreground">今天发送的消息</p>
           </CardContent>
         </Card>
       </div>
@@ -199,225 +436,312 @@ export function Communication() {
       {/* 主要内容区域 */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[600px]">
         {/* 聊天列表 */}
-        <Card className="lg:col-span-1 bg-white/80 backdrop-blur-sm border border-sky-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-base">消息列表</CardTitle>
-              <Button size="sm" variant="ghost">
-                <Search className="w-4 h-4" />
-              </Button>
+            <CardTitle className="text-base">消息列表</CardTitle>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="搜索聊天..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="space-y-1">
-              {chatList.map((chat) => (
-                <div
-                  key={chat.id}
-                  className={`p-3 cursor-pointer hover:bg-gray-50 ${
-                    selectedChat === chat.id ? "bg-blue-50 border-r-2 border-blue-500" : ""
-                  }`}
-                  onClick={() => setSelectedChat(chat.id)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={chat.avatar || "/placeholder.svg"} />
-                        <AvatarFallback>{chat.name[0]}</AvatarFallback>
-                      </Avatar>
-                      {chat.type === "group" && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                          <Users className="w-2 h-2 text-white" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-center">
-                        <p className="font-medium text-sm truncate">{chat.name}</p>
-                        <span className="text-xs text-muted-foreground">{chat.time}</span>
+            <ScrollArea className="h-[480px]">
+              <div className="space-y-1 p-4">
+                {filteredChatRooms.map((room) => (
+                  <div
+                    key={room.id}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-slate-50 ${
+                      activeChat === room.id ? "bg-blue-50 border-l-4 border-blue-500" : ""
+                    }`}
+                    onClick={() => setActiveChat(room.id)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage src={room.avatar || "/placeholder.svg"} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white">
+                            {room.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {room.isOnline && (
+                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                        )}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">{chat.lastMessage}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-slate-800 truncate">{room.name}</h4>
+                          <span className="text-xs text-slate-500">{formatTime(room.lastMessageTime)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-slate-600 truncate">{room.lastMessage}</p>
+                          {room.unreadCount > 0 && (
+                            <Badge className="bg-red-500 text-white text-xs min-w-[20px] h-5 flex items-center justify-center">
+                              {room.unreadCount}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    {chat.unread > 0 && (
-                      <Badge className="w-5 h-5 rounded-full p-0 flex items-center justify-center text-xs">
-                        {chat.unread}
-                      </Badge>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
           </CardContent>
         </Card>
 
         {/* 聊天窗口 */}
-        <Card className="lg:col-span-2 bg-white/80 backdrop-blur-sm border border-sky-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-          <CardHeader className="pb-3 border-b">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-3">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                  <AvatarFallback>团</AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle className="text-base">产品开发团队</CardTitle>
-                  <p className="text-xs text-muted-foreground">5人在线</p>
-                </div>
-              </div>
-              <div className="flex space-x-2">
-                <Button size="sm" variant="ghost">
-                  <Phone className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="ghost">
-                  <Video className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="flex flex-col h-[400px] p-0">
-            {/* 消息列表 */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.isOwn ? "justify-end" : "justify-start"}`}>
-                  <div className={`flex space-x-2 max-w-[70%] ${msg.isOwn ? "flex-row-reverse space-x-reverse" : ""}`}>
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={msg.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>{msg.sender[0]}</AvatarFallback>
+        <Card className="lg:col-span-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          {activeChat ? (
+            <>
+              <CardHeader className="pb-3 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={currentChat?.avatar || "/placeholder.svg"} />
+                      <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white">
+                        {currentChat?.name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div
-                        className={`p-3 rounded-lg ${
-                          msg.isOwn ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-900"
-                        }`}
-                      >
-                        <p className="text-sm">{msg.content}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1 px-1">
-                        {msg.isOwn ? "" : msg.sender + " · "}
-                        {msg.time}
+                      <h3 className="font-medium text-slate-800">{currentChat?.name}</h3>
+                      <p className="text-sm text-slate-600">
+                        {currentChat?.type === "group"
+                          ? `${currentChat.members.length} 名成员`
+                          : currentChat?.isOnline
+                            ? "在线"
+                            : "离线"}
                       </p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 消息输入框 */}
-            <div className="border-t p-4">
-              <div className="flex space-x-2">
-                <div className="flex-1 relative">
-                  <Textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="输入消息..."
-                    className="min-h-[60px] pr-20"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSendMessage()
-                      }
-                    }}
-                  />
-                  <div className="absolute bottom-2 right-2 flex space-x-1">
-                    <Button size="sm" variant="ghost">
-                      <Paperclip className="w-4 h-4" />
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm">
+                      <Phone className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="ghost">
-                      <Smile className="w-4 h-4" />
+                    <Button variant="ghost" size="sm">
+                      <Video className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
-                <Button
-                  onClick={handleSendMessage}
-                  className="self-end bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[400px] p-4">
+                  <div className="space-y-4">
+                    {currentMessages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`flex ${msg.senderId === "user1" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[70%] ${
+                            msg.senderId === "user1"
+                              ? "bg-blue-500 text-white rounded-l-lg rounded-tr-lg"
+                              : "bg-slate-100 text-slate-800 rounded-r-lg rounded-tl-lg"
+                          } p-3`}
+                        >
+                          {msg.senderId !== "user1" && (
+                            <p className="text-xs font-medium mb-1 opacity-70">{msg.senderName}</p>
+                          )}
+                          <p className="text-sm">{msg.content}</p>
+                          <div className="flex items-center justify-end mt-1 space-x-1">
+                            <span className="text-xs opacity-70">{formatTime(msg.timestamp)}</span>
+                            {msg.senderId === "user1" && (
+                              <CheckCheck className={`w-3 h-3 ${msg.isRead ? "text-blue-200" : "text-white"}`} />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
+                <div className="border-t p-4">
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm">
+                      <Paperclip className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <Smile className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={isRecording ? "text-red-500" : ""}
+                      onClick={() => setIsRecording(!isRecording)}
+                    >
+                      <Mic className="w-4 h-4" />
+                    </Button>
+                    <Input
+                      placeholder="输入消息..."
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                      className="flex-1"
+                    />
+                    <Button onClick={sendMessage} disabled={!message.trim()}>
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </>
+          ) : (
+            <CardContent className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <MessageSquare className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500">选择一个聊天开始对话</p>
               </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* 信息面板 */}
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Tabs defaultValue="online" className="h-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="online">在线用户</TabsTrigger>
+              <TabsTrigger value="announcements">公告</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="online" className="mt-4">
+              <ScrollArea className="h-[500px]">
+                <div className="space-y-3 p-4">
+                  {onlineUsers.map((user) => (
+                    <div key={user.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-50">
+                      <div className="relative">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={user.avatar || "/placeholder.svg"} />
+                          <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white text-sm">
+                            {user.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div
+                          className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(
+                            user.status,
+                          )}`}
+                        ></div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-slate-800 text-sm truncate">{user.name}</h4>
+                        <p className="text-xs text-slate-600 truncate">{user.department}</p>
+                        <p className="text-xs text-slate-500">{getStatusText(user.status)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="announcements" className="mt-4">
+              <ScrollArea className="h-[500px]">
+                <div className="space-y-4 p-4">
+                  {announcements.map((announcement) => (
+                    <div key={announcement.id} className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-medium text-slate-800 text-sm">{announcement.title}</h4>
+                        <Badge
+                          variant={
+                            announcement.priority === "high"
+                              ? "destructive"
+                              : announcement.priority === "medium"
+                                ? "default"
+                                : "secondary"
+                          }
+                          className="text-xs"
+                        >
+                          {announcement.priority === "high"
+                            ? "重要"
+                            : announcement.priority === "medium"
+                              ? "普通"
+                              : "一般"}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-slate-600 mb-2">{announcement.content}</p>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>{announcement.author}</span>
+                        <span>{formatTime(announcement.timestamp)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </Card>
+      </div>
+
+      {/* 快速操作区域 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center">
+              <Video className="w-5 h-5 mr-2 text-blue-600" />
+              视频会议
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-600 mb-4">快速发起或加入视频会议</p>
+            <div className="space-y-2">
+              <Button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600">
+                <Video className="w-4 h-4 mr-2" />
+                发起会议
+              </Button>
+              <Button variant="outline" className="w-full bg-transparent">
+                <Calendar className="w-4 h-4 mr-2" />
+                预约会议
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* 公告和通知 */}
-        <Card className="lg:col-span-1 bg-white/80 backdrop-blur-sm border border-sky-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-          <CardHeader>
-            <CardTitle className="text-base">公告通知</CardTitle>
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center">
+              <FileText className="w-5 h-5 mr-2 text-green-600" />
+              文档协作
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="announcements" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="announcements">公告</TabsTrigger>
-                <TabsTrigger value="contacts">通讯录</TabsTrigger>
-              </TabsList>
+            <p className="text-sm text-slate-600 mb-4">创建和协作编辑文档</p>
+            <div className="space-y-2">
+              <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-600">
+                <Plus className="w-4 h-4 mr-2" />
+                新建文档
+              </Button>
+              <Button variant="outline" className="w-full bg-transparent">
+                <Share2 className="w-4 h-4 mr-2" />
+                共享文档
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-              <TabsContent value="announcements" className="space-y-3 mt-4">
-                {announcements.map((announcement) => (
-                  <div key={announcement.id} className="p-3 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-sm">{announcement.title}</h4>
-                      <Badge
-                        variant={
-                          announcement.priority === "high"
-                            ? "destructive"
-                            : announcement.priority === "medium"
-                              ? "outline"
-                              : "secondary"
-                        }
-                        className="text-xs"
-                      >
-                        {announcement.priority === "high"
-                          ? "重要"
-                          : announcement.priority === "medium"
-                            ? "普通"
-                            : "一般"}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">{announcement.content}</p>
-                    <p className="text-xs text-muted-foreground">{announcement.time}</p>
-                  </div>
-                ))}
-              </TabsContent>
-
-              <TabsContent value="contacts" className="space-y-3 mt-4">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                      <AvatarFallback>张</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">张经理</p>
-                      <p className="text-xs text-muted-foreground">总经理</p>
-                    </div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  </div>
-
-                  <div className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                      <AvatarFallback>李</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">李工程师</p>
-                      <p className="text-xs text-muted-foreground">技术部</p>
-                    </div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  </div>
-
-                  <div className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                      <AvatarFallback>王</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">王主管</p>
-                      <p className="text-xs text-muted-foreground">销售部</p>
-                    </div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center">
+              <Users className="w-5 h-5 mr-2 text-purple-600" />
+              团队管理
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-600 mb-4">管理团队成员和权限</p>
+            <div className="space-y-2">
+              <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-600">
+                <Plus className="w-4 h-4 mr-2" />
+                邀请成员
+              </Button>
+              <Button variant="outline" className="w-full bg-transparent">
+                <Settings className="w-4 h-4 mr-2" />
+                权限设置
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

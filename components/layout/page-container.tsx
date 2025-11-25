@@ -1,28 +1,24 @@
-"use client"
-
-import type { ReactNode } from "react"
+import { cn } from "@/lib/utils"
 import { commonStyles } from "@/lib/design-system"
+import type { ReactNode } from "react"
 
 interface PageContainerProps {
-  title: string
-  description?: string
   children: ReactNode
   className?: string
+  title?: string
+  description?: string
 }
 
-export function PageContainer({ title, description, children, className = "" }: PageContainerProps) {
+export function PageContainer({ children, className, title, description }: PageContainerProps) {
   return (
-    <div className={`${commonStyles.layout.container} ${className}`}>
-      <div className="space-y-6">
-        {/* 页面头部 */}
-        <div className="border-b border-sky-100 pb-6">
-          <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-          {description && <p className="text-slate-600 mt-2">{description}</p>}
+    <div className={cn(commonStyles.layout.container, className)}>
+      {(title || description) && (
+        <div className="mb-8">
+          {title && <h1 className="text-3xl font-bold text-slate-800 mb-2">{title}</h1>}
+          {description && <p className="text-sky-600 text-lg">{description}</p>}
         </div>
-
-        {/* 页面内容 */}
-        <div className="space-y-6">{children}</div>
-      </div>
+      )}
+      {children}
     </div>
   )
 }
